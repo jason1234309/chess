@@ -9,6 +9,7 @@ import java.util.Objects;
  * <p>
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
+ * not a big fan of adding comments
  */
 public class ChessPiece {
     ChessGame.TeamColor pieceTeamColor;
