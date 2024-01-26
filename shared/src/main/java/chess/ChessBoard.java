@@ -1,7 +1,6 @@
 package chess;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -10,113 +9,91 @@ import java.util.Map;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    Map<ChessPosition, ChessPiece> chessBoardMap = new HashMap<>();
-    KingPiece blackKing = new KingPiece(ChessGame.TeamColor.BLACK);
-    QueenPiece blackQueen = new QueenPiece(ChessGame.TeamColor.BLACK);
-    BishopPiece blackBishopLeft = new BishopPiece(ChessGame.TeamColor.BLACK);
-    BishopPiece blackBishopRight = new BishopPiece(ChessGame.TeamColor.BLACK);
-    KnightPiece blackKnightLeft = new KnightPiece(ChessGame.TeamColor.BLACK);
-    KnightPiece blackKnightRight = new KnightPiece(ChessGame.TeamColor.BLACK);
-    RookPiece blackRookLeft = new RookPiece(ChessGame.TeamColor.BLACK);
-    RookPiece blackRookRight = new RookPiece(ChessGame.TeamColor.BLACK);
-    PawnPiece blackPawn1 = new PawnPiece(ChessGame.TeamColor.BLACK);
-    PawnPiece blackPawn2 = new PawnPiece(ChessGame.TeamColor.BLACK);
-    PawnPiece blackPawn3 = new PawnPiece(ChessGame.TeamColor.BLACK);
-    PawnPiece blackPawn4 = new PawnPiece(ChessGame.TeamColor.BLACK);
-    PawnPiece blackPawn5 = new PawnPiece(ChessGame.TeamColor.BLACK);
-    PawnPiece blackPawn6 = new PawnPiece(ChessGame.TeamColor.BLACK);
-    PawnPiece blackPawn7 = new PawnPiece(ChessGame.TeamColor.BLACK);
-    PawnPiece blackPawn8 = new PawnPiece(ChessGame.TeamColor.BLACK);
+    ChessPiece[][] chessBoardArray = new ChessPiece[8][8];
 
-    KingPiece whiteKing = new KingPiece(ChessGame.TeamColor.WHITE);
-    QueenPiece whiteQueen = new QueenPiece(ChessGame.TeamColor.WHITE);
-    BishopPiece whiteBishopLeft = new BishopPiece(ChessGame.TeamColor.WHITE);
-    BishopPiece whiteBishopRight = new BishopPiece(ChessGame.TeamColor.WHITE);
-    KnightPiece whiteKnightLeft = new KnightPiece(ChessGame.TeamColor.WHITE);
-    KnightPiece whiteKnightRight = new KnightPiece(ChessGame.TeamColor.WHITE);
-    RookPiece whiteRookLeft = new RookPiece(ChessGame.TeamColor.WHITE);
-    RookPiece whiteRookRight = new RookPiece(ChessGame.TeamColor.WHITE);
-    PawnPiece whitePawn1 = new PawnPiece(ChessGame.TeamColor.WHITE);
-    PawnPiece whitePawn2 = new PawnPiece(ChessGame.TeamColor.WHITE);
-    PawnPiece whitePawn3 = new PawnPiece(ChessGame.TeamColor.WHITE);
-    PawnPiece whitePawn4 = new PawnPiece(ChessGame.TeamColor.WHITE);
-    PawnPiece whitePawn5 = new PawnPiece(ChessGame.TeamColor.WHITE);
-    PawnPiece whitePawn6 = new PawnPiece(ChessGame.TeamColor.WHITE);
-    PawnPiece whitePawn7 = new PawnPiece(ChessGame.TeamColor.WHITE);
-    PawnPiece whitePawn8 = new PawnPiece(ChessGame.TeamColor.WHITE);
+    static ChessPiece blackKing = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
+    static ChessPiece blackQueen = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN);
+    static ChessPiece blackBishopLeft = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
+    static ChessPiece blackBishopRight = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
+    static ChessPiece blackKnightLeft = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
+    static ChessPiece blackKnightRight = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
+    static ChessPiece blackRookLeft = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
+   static ChessPiece blackRookRight = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
+   static ChessPiece blackPawn1 = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+   static ChessPiece blackPawn2 = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+   static ChessPiece blackPawn3 = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+   static ChessPiece blackPawn4 = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+   static ChessPiece blackPawn5 = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+   static ChessPiece blackPawn6 = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+   static ChessPiece blackPawn7 = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
+   static ChessPiece blackPawn8 = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
 
-    ChessPosition position1_1 = new ChessPosition(1, 1);
-    ChessPosition position1_2 = new ChessPosition(1, 2);
-    ChessPosition position1_3 = new ChessPosition(1, 3);
-    ChessPosition position1_4 = new ChessPosition(1, 4);
-    ChessPosition position1_5 = new ChessPosition(1, 5);
-    ChessPosition position1_6 = new ChessPosition(1, 6);
-    ChessPosition position1_7 = new ChessPosition(1, 7);
-    ChessPosition position1_8 = new ChessPosition(1, 8);
+   static ChessPiece whiteKing = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING);
+   static ChessPiece whiteQueen = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN);
+   static ChessPiece whiteBishopLeft = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP);
+   static ChessPiece whiteBishopRight = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP);
+   static ChessPiece whiteKnightLeft = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
+   static ChessPiece whiteKnightRight = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
+   static ChessPiece whiteRookLeft = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
+   static ChessPiece whiteRookRight = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
+   static ChessPiece whitePawn1 = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+   static ChessPiece whitePawn2 = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+   static ChessPiece whitePawn3 = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+   static ChessPiece whitePawn4 = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+   static ChessPiece whitePawn5 = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+   static ChessPiece whitePawn6 = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+   static ChessPiece whitePawn7 = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
+   static ChessPiece whitePawn8 = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
 
-    ChessPosition position2_1 = new ChessPosition(2, 1);
-    ChessPosition position2_2 = new ChessPosition(2, 2);
-    ChessPosition position2_3 = new ChessPosition(2, 3);
-    ChessPosition position2_4 = new ChessPosition(2, 4);
-    ChessPosition position2_5 = new ChessPosition(2, 5);
-    ChessPosition position2_6 = new ChessPosition(2, 6);
-    ChessPosition position2_7 = new ChessPosition(2, 7);
-    ChessPosition position2_8 = new ChessPosition(2, 8);
+   static ChessPosition position1_1 = new ChessPosition(1, 1);
+   static ChessPosition position1_2 = new ChessPosition(1, 2);
+   static ChessPosition position1_3 = new ChessPosition(1, 3);
+   static ChessPosition position1_4 = new ChessPosition(1, 4);
+   static ChessPosition position1_5 = new ChessPosition(1, 5);
+   static ChessPosition position1_6 = new ChessPosition(1, 6);
+   static ChessPosition position1_7 = new ChessPosition(1, 7);
+   static ChessPosition position1_8 = new ChessPosition(1, 8);
 
-    ChessPosition position3_1 = new ChessPosition(3, 1);
-    ChessPosition position3_2 = new ChessPosition(3, 2);
-    ChessPosition position3_3 = new ChessPosition(3, 3);
-    ChessPosition position3_4 = new ChessPosition(3, 4);
-    ChessPosition position3_5 = new ChessPosition(3, 5);
-    ChessPosition position3_6 = new ChessPosition(3, 6);
-    ChessPosition position3_7 = new ChessPosition(3, 7);
-    ChessPosition position3_8 = new ChessPosition(3, 8);
+   static ChessPosition position2_1 = new ChessPosition(2, 1);
+   static ChessPosition position2_2 = new ChessPosition(2, 2);
+   static ChessPosition position2_3 = new ChessPosition(2, 3);
+   static ChessPosition position2_4 = new ChessPosition(2, 4);
+   static ChessPosition position2_5 = new ChessPosition(2, 5);
+   static ChessPosition position2_6 = new ChessPosition(2, 6);
+   static ChessPosition position2_7 = new ChessPosition(2, 7);
+   static ChessPosition position2_8 = new ChessPosition(2, 8);
 
-    ChessPosition position4_1 = new ChessPosition(4, 1);
-    ChessPosition position4_2 = new ChessPosition(4, 2);
-    ChessPosition position4_3 = new ChessPosition(4, 3);
-    ChessPosition position4_4 = new ChessPosition(4, 4);
-    ChessPosition position4_5 = new ChessPosition(4, 5);
-    ChessPosition position4_6 = new ChessPosition(4, 6);
-    ChessPosition position4_7 = new ChessPosition(4, 7);
-    ChessPosition position4_8 = new ChessPosition(4, 8);
+   static ChessPosition position7_1 = new ChessPosition(7, 1);
+   static ChessPosition position7_2 = new ChessPosition(7, 2);
+   static ChessPosition position7_3 = new ChessPosition(7, 3);
+   static ChessPosition position7_4 = new ChessPosition(7, 4);
+   static ChessPosition position7_5 = new ChessPosition(7, 5);
+   static ChessPosition position7_6 = new ChessPosition(7, 6);
+   static ChessPosition position7_7 = new ChessPosition(7, 7);
+   static ChessPosition position7_8 = new ChessPosition(7, 8);
 
-    ChessPosition position5_1 = new ChessPosition(5, 1);
-    ChessPosition position5_2 = new ChessPosition(5, 2);
-    ChessPosition position5_3 = new ChessPosition(5, 3);
-    ChessPosition position5_4 = new ChessPosition(5, 4);
-    ChessPosition position5_5 = new ChessPosition(5, 5);
-    ChessPosition position5_6 = new ChessPosition(5, 6);
-    ChessPosition position5_7 = new ChessPosition(5, 7);
-    ChessPosition position5_8 = new ChessPosition(5, 8);
+   static ChessPosition position8_1 = new ChessPosition(8, 1);
+   static ChessPosition position8_2 = new ChessPosition(8, 2);
+   static ChessPosition position8_3 = new ChessPosition(8, 3);
+   static ChessPosition position8_4 = new ChessPosition(8, 4);
+   static ChessPosition position8_5 = new ChessPosition(8, 5);
+   static ChessPosition position8_6 = new ChessPosition(8, 6);
+   static ChessPosition position8_7 = new ChessPosition(8, 7);
+   static ChessPosition position8_8 = new ChessPosition(8, 8);
 
-    ChessPosition position6_1 = new ChessPosition(6, 1);
-    ChessPosition position6_2 = new ChessPosition(6, 2);
-    ChessPosition position6_3 = new ChessPosition(6, 3);
-    ChessPosition position6_4 = new ChessPosition(6, 4);
-    ChessPosition position6_5 = new ChessPosition(6, 5);
-    ChessPosition position6_6 = new ChessPosition(6, 6);
-    ChessPosition position6_7 = new ChessPosition(6, 7);
-    ChessPosition position6_8 = new ChessPosition(6, 8);
 
-    ChessPosition position7_1 = new ChessPosition(7, 1);
-    ChessPosition position7_2 = new ChessPosition(7, 2);
-    ChessPosition position7_3 = new ChessPosition(7, 3);
-    ChessPosition position7_4 = new ChessPosition(7, 4);
-    ChessPosition position7_5 = new ChessPosition(7, 5);
-    ChessPosition position7_6 = new ChessPosition(7, 6);
-    ChessPosition position7_7 = new ChessPosition(7, 7);
-    ChessPosition position7_8 = new ChessPosition(7, 8);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ChessBoard that = (ChessBoard) o;
+        return Arrays.deepEquals(chessBoardArray, that.chessBoardArray);
+    }
 
-    ChessPosition position8_1 = new ChessPosition(8, 1);
-    ChessPosition position8_2 = new ChessPosition(8, 2);
-    ChessPosition position8_3 = new ChessPosition(8, 3);
-    ChessPosition position8_4 = new ChessPosition(8, 4);
-    ChessPosition position8_5 = new ChessPosition(8, 5);
-    ChessPosition position8_6 = new ChessPosition(8, 6);
-    ChessPosition position8_7 = new ChessPosition(8, 7);
-    ChessPosition position8_8 = new ChessPosition(8, 8);
-
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(chessBoardArray);
+    }
 
     public ChessBoard() {
 
@@ -129,7 +106,8 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        chessBoardMap.put(position,piece);
+
+        chessBoardArray[position.getRow()-1][position.getColumn()-1] = piece;
     }
      /**
      * Gets a chess piece on the chessboard
@@ -139,14 +117,15 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return chessBoardMap.get(position);
+
+        return chessBoardArray[position.getRow()-1][position.getColumn()-1];
     }
     /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        chessBoardMap.clear();
+        chessBoardArray = new ChessPiece[8][8];
         addPiece(position1_1, whiteRookLeft);
         addPiece(position1_2, whiteKnightLeft);
         addPiece(position1_3, whiteBishopLeft);
