@@ -60,6 +60,12 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
+        ChessPiece boardCopyArray[][] = new ChessPiece[8][8];
+        for(int i=0; i < 8; i++){
+            for(int j=0; j < 8; j++){
+                boardCopyArray[i][j] = currentChessBoard.chessBoardArray[i][j];
+            }
+        }
         if(currentChessBoard.getPiece(move.getStartPosition()) == null){
             throw new InvalidMoveException();
         }
@@ -92,19 +98,24 @@ public class ChessGame {
         if(!isValidMove){
             throw new InvalidMoveException();
         }
+        if(isInCheckmate(currentTeamTurn)){
+            throw new InvalidMoveException();
+        }
+        if(isInStalemate(currentTeamTurn)){
+            throw new InvalidMoveException();
+        }
         if(isInCheck(currentTeamTurn)){
-            currentChessBoard.removePiece(move.getStartPosition());
-            currentChessBoard.addPiece(move.getEndPosition(), currentChessPiece);
+            boardCopyArray[move.getEndPosition().getRow()-1][move.getEndPosition().getColumn()-1] =
+                    currentChessPiece;
+            boardCopyArray[move.getStartPosition().getRow()-1][move.getStartPosition().getColumn()-1] = null;
             if(isInCheck(currentTeamTurn)){
-                currentChessBoard.removePiece(move.getEndPosition());
-                currentChessBoard.addPiece(move.getStartPosition(), currentChessPiece);
                 throw new InvalidMoveException();
             }
-        }else{
-            currentChessBoard.removePiece(move.getStartPosition());
-            currentChessBoard.addPiece(move.getEndPosition(), currentChessPiece);
         }
-
+        currentChessBoard.chessBoardArray[move.getEndPosition().getRow()-1]
+                [move.getEndPosition().getColumn()-1] = currentChessPiece;
+        currentChessBoard.chessBoardArray[move.getStartPosition().getRow()-1]
+                [move.getStartPosition().getColumn()-1] = null;
         if(currentTeamTurn == TeamColor.WHITE){
             currentTeamTurn = TeamColor.BLACK;
         }else{
@@ -158,7 +169,39 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece boardCopyArray[][] = new ChessPiece[8][8];
+        for(int i=0; i < 8; i++){
+            for(int j=0; j < 8; j++){
+                boardCopyArray[i][j] = currentChessBoard.chessBoardArray[i][j];
+            }
+        }
+        if(isInCheck(teamColor)){
+            for(int i = 0; i < 8; i++){
+                for(int j = 0; j < 8; j++){
+                    ChessPosition currentStartingPosition = new ChessPosition(i+1,j+1);
+                    if(currentChessBoard.getPiece(currentStartingPosition) != null){
+                        ChessMove[] possibleCheckMoves = currentChessBoard.getPiece(currentStartingPosition)
+                                .pieceMoves(currentChessBoard, currentStartingPosition).toArray(new ChessMove[0]);
+                        for(int k = 0; k < possibleCheckMoves.length; k++){
+                            boardCopyArray[possibleCheckMoves[k].getEndPosition().getRow()-1]
+                                    [possibleCheckMoves[k].getEndPosition().getColumn()-1] =
+                                    currentChessBoard.getPiece(currentStartingPosition);
+                            boardCopyArray[currentStartingPosition.getRow()-1]
+                                    [currentStartingPosition.getColumn()-1] = null;
+                            if(!isInCheck(teamColor)){
+                                return false;
+                            }
+                            boardCopyArray[possibleCheckMoves[k].getEndPosition().getRow()-1]
+                                    [possibleCheckMoves[k].getEndPosition().getColumn()-1] = null;
+                            boardCopyArray[currentStartingPosition.getRow()-1]
+                                    [currentStartingPosition.getColumn()-1] =
+                                    currentChessBoard.getPiece(currentStartingPosition);
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**
@@ -169,7 +212,43 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece boardCopyArray[][] = new ChessPiece[8][8];
+        for(int i=0; i < 8; i++){
+            for(int j=0; j < 8; j++){
+                boardCopyArray[i][j] = currentChessBoard.chessBoardArray[i][j];
+            }
+        }
+        if(!isInCheck(teamColor)){
+            for(int i = 0; i < 8; i++){
+                for(int j = 0; j < 8; j++){
+                    ChessPosition currentStartingPosition = new ChessPosition(i+1,j+1);
+                    if(currentChessBoard.getPiece(currentStartingPosition) != null){
+                        ChessMove[] possibleCheckMoves = currentChessBoard.getPiece(currentStartingPosition)
+                                .pieceMoves(currentChessBoard, currentStartingPosition).toArray(new ChessMove[0]);
+                        if(possibleCheckMoves.length > 0){
+                            for(int k = 0; k < possibleCheckMoves.length; k++){
+                                boardCopyArray[possibleCheckMoves[k].getEndPosition().getRow()-1]
+                                        [possibleCheckMoves[k].getEndPosition().getColumn()-1] =
+                                        currentChessBoard.getPiece(currentStartingPosition);
+                                boardCopyArray[currentStartingPosition.getRow()-1]
+                                        [currentStartingPosition.getColumn()-1] = null;
+                                if(!isInCheck(teamColor)){
+                                    return false;
+                                }
+                                boardCopyArray[possibleCheckMoves[k].getEndPosition().getRow()-1]
+                                        [possibleCheckMoves[k].getEndPosition().getColumn()-1] = null;
+                                boardCopyArray[currentStartingPosition.getRow()-1]
+                                        [currentStartingPosition.getColumn()-1] =
+                                        currentChessBoard.getPiece(currentStartingPosition);
+                            }
+                        }else {
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**
