@@ -15,12 +15,12 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public void createGame(String gameID, String gameName) {
+    public void createGame(String gameID, String gameName) throws DataAccessException {
 
     }
 
     @Override
-    public GameData getGame(String gameID) {
+    public GameData getGame(String gameID) throws DataAccessException {
         return null;
     }
 
@@ -30,7 +30,7 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public void updateGame(String gameID) {
+    public void updateGame(String gameID) throws DataAccessException {
 
     }
 }
