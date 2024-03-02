@@ -15,7 +15,13 @@ public class MemoryUserDAO implements UserDAO{
     @Override
     public void createUser(String username, String password, String email) throws DataAccessException {
         UserData currentUser = new UserData(username,password,email);
-        userDataBase.add(currentUser);
+        if(!userDataBase.contains(currentUser)){
+            userDataBase.add(currentUser);
+        }
+        else{
+            throw new DataAccessException("user already exists");
+        }
+
     }
 
     @Override
@@ -25,6 +31,6 @@ public class MemoryUserDAO implements UserDAO{
                 return currentUser;
             }
         }
-        return null;
+        throw new DataAccessException("user does not exist");
     }
 }

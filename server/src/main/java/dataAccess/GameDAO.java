@@ -8,7 +8,7 @@ public interface GameDAO {
     //A method for clearing all data from the database. This is used during testing.
     void clearUserDataBase();
     //  Create a new game.
-    void createGame(String gameID, String gameName) throws DataAccessException;
+    void createGame(int gameID, String gameName) throws DataAccessException;
     // Retrieve a specified game with the given game ID.
     GameData getGame(String gameID) throws DataAccessException;
     // Retrieve all games.
