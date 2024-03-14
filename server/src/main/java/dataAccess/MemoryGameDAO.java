@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class MemoryGameDAO implements GameDAO{
-    Collection<GameData> gameDataBase = new ArrayList<>();
+    static Collection<GameData> gameDataBase = new ArrayList<>();
 
     @Override
     public void clearUserDataBase() {

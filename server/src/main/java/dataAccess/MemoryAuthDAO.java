@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class MemoryAuthDAO implements AuthDAO{
-    Collection<AuthData> authTokenDataBase = new ArrayList<>();
+    static Collection<AuthData> authTokenDataBase = new ArrayList<>();
 
     @Override
     public void clearUserDataBase() {
