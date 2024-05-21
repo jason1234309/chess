@@ -24,7 +24,12 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        chessBoardMap.put(position, piece);
+        if(piece == null){
+            chessBoardMap.remove(position);
+        }
+        else {
+            chessBoardMap.put(position, piece);
+        }
     }
 
     /**
@@ -86,7 +91,7 @@ public class ChessBoard {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessBoard that = (ChessBoard) o;
-        return Objects.deepEquals(chessBoardMap, that.chessBoardMap);
+        return Objects.equals(chessBoardMap, that.chessBoardMap);
     }
 
     @Override

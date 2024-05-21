@@ -11,11 +11,11 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessGame {
-    TeamColor currentTeamTurn;
+    TeamColor currentTeamTurn = TeamColor.WHITE;
     ChessBoard currentChessBoard = new ChessBoard();
 
     public ChessGame() {
-
+        currentChessBoard.resetBoard();
     }
 
     /**
@@ -252,6 +252,6 @@ public class ChessGame {
 
     @Override
     public int hashCode() {
-        return Objects.hash(currentTeamTurn, currentChessBoard);
+        return Objects.hash(currentChessBoard);
     }
 }
