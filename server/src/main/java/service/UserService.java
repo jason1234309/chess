@@ -4,6 +4,7 @@ import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 
+import javax.xml.crypto.Data;
 import java.util.UUID;
 
 public class UserService {
@@ -47,26 +48,11 @@ public class UserService {
         catch(DataAccessException currentException){
             return new AuthData("Auth didnt work", "shouldnt get called");
         }
-//        try{
-//            AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
-//            authDAOObj.createAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken());
-//            return brandNewAuthToken;
-//        }
-//        catch(DataAccessException currentException){
-//            return new AuthData("not sure the erorr", "shouldnt get called");
-//        }
     }
     public void logout(AuthData userAuthToken) throws DataAccessException {
-        // needs a try catch block
-//        try{
-//            if(authDAOObj.getAuth(userAuthToken.getAuthToken()) == null){
-//                throw new DataAccessException("auth doesnt exist");
-//            }
-//            authDAOObj.deleteAuth(userAuthToken.getAuthToken());
-//
-//        }
-//        catch(DataAccessException currentException){
-//
-//        }
+            if(authDAOObj.getAuth(userAuthToken.getAuthToken()) == null){
+                throw new DataAccessException("auth doesnt exist");
+            }
+            authDAOObj.deleteAuth(userAuthToken.getAuthToken());
     }
 }

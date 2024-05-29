@@ -10,7 +10,7 @@ public class MemoryAuthDAO implements AuthDAO{
 
     @Override
     public void clearUserDataBase() {
-        authTokenDataBase = null;
+        authTokenDataBase.clear();
     }
 
     @Override

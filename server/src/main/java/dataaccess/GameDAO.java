@@ -15,5 +15,5 @@ public interface GameDAO {
     Collection<GameData> listGames();
     //  Updates a chess game. It should replace the chess game string corresponding to a given gameID.
     //  This is used when players join a game or when a move is made.
-    void updateGame(String gameID)throws DataAccessException;
+    void updateGame(String gameID, GameData updatedGameObject)throws DataAccessException;
 }

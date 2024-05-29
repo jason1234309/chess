@@ -9,7 +9,7 @@ public class MemoryUserDAO implements UserDAO{
     static Collection<UserData> userDataBase = new ArrayList<>();
     @Override
     public void clearUserDataBase() {
-        userDataBase = null;
+        userDataBase.clear();
     }
 
     @Override

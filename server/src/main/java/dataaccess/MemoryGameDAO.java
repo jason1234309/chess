@@ -11,7 +11,7 @@ public class MemoryGameDAO implements GameDAO{
 
     @Override
     public void clearUserDataBase() {
-        gameDataBase = null;
+        gameDataBase.clear();
     }
 
     @Override
@@ -43,13 +43,13 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public void updateGame(String gameID) throws DataAccessException {
+    public void updateGame(String gameID, GameData updatedGameObject) throws DataAccessException {
         boolean foundGame = false;
         GameData desiredGame;
         for(GameData currentGame: gameDataBase){
-            if(!currentGame.getGameName().equals(gameID)){
+            if(currentGame.getGameID() == (Integer.parseInt(gameID))){
                 foundGame = true;
-                desiredGame = currentGame;
+                currentGame = updatedGameObject;
                 //update game here
                 break;
             }
