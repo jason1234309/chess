@@ -9,7 +9,7 @@ public class MemoryAuthDAO implements AuthDAO{
     static Collection<AuthData> authTokenDataBase = new ArrayList<>();
 
     @Override
-    public void clearUserDataBase() {
+    public void clearAuthDataBase() {
         authTokenDataBase.clear();
     }
 
@@ -34,7 +34,14 @@ public class MemoryAuthDAO implements AuthDAO{
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        if(!authTokenDataBase.remove(authToken)){
+        AuthData tempAuthVar = null;
+        for(AuthData currentAuthToken : authTokenDataBase){
+            if(currentAuthToken.getAuthToken().equals(authToken)){
+                tempAuthVar = currentAuthToken;
+                break;
+            }
+        }
+        if(!authTokenDataBase.remove(tempAuthVar)){
             throw new DataAccessException("the AuthObj doesn't exist\n");
         }
     }

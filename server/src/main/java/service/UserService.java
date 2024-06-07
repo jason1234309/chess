@@ -5,30 +5,20 @@ import model.AuthData;
 import model.UserData;
 
 import javax.xml.crypto.Data;
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserService {
-    UserDAO userDAOObj = new MemoryUserDAO();
-    AuthDAO authDAOObj = new MemoryAuthDAO();
-    public AuthData register(UserData user) {
-        try{
+    static UserDAO userDAOObj = new MemoryUserDAO();
+    static AuthDAO authDAOObj = new MemoryAuthDAO();
+
+    public AuthData register(UserData user) throws DataAccessException {
             userDAOObj.createUser(user.getUsername(), user.getPassword(), user.getPassword());
-        }
-        catch(DataAccessException currentException){
-            return new AuthData("403 error", "Error: already taken");
-        }
-        try{
-            AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
-            authDAOObj.createAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken());
+            AuthData brandNewAuthToken = new AuthData(UUID.randomUUID().toString(),user.getUsername());
+            authDAOObj.createAuth(brandNewAuthToken.getAuthToken(), brandNewAuthToken.getUsername());
             return brandNewAuthToken;
-        }
-        catch(DataAccessException currentException){
-            return new AuthData("not sure the erorr", "shouldnt get called");
-        }
     }
-    public AuthData login(UserData user) {
-        // needs a try catch block
-        try{
+    public AuthData login(UserData user) throws DataAccessException {
             if(userDAOObj.getUser(user.getUsername()) == null){
                 throw new DataAccessException("username doesnt exist");
             }
@@ -36,23 +26,31 @@ public class UserService {
             if(!dataBaseUser.getPassword().equals(user.getPassword())){
                 throw new DataAccessException("Incorrect password");
             }
-            try{
-                AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
-                authDAOObj.createAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken());
-                return brandNewAuthToken;
-            }
-            catch(DataAccessException currentException){
-                return new AuthData("not sure the erorr", "shouldnt get called");
-            }
-        }
-        catch(DataAccessException currentException){
-            return new AuthData("Auth didnt work", "shouldnt get called");
-        }
+            AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
+            authDAOObj.createAuth(brandNewAuthToken.getAuthToken(), brandNewAuthToken.getUsername());
+            return brandNewAuthToken;
     }
     public void logout(AuthData userAuthToken) throws DataAccessException {
             if(authDAOObj.getAuth(userAuthToken.getAuthToken()) == null){
                 throw new DataAccessException("auth doesnt exist");
             }
             authDAOObj.deleteAuth(userAuthToken.getAuthToken());
+    }
+    public void clearUsers(){
+        userDAOObj.clearUserDataBase();
+        authDAOObj.clearAuthDataBase();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserService that = (UserService) o;
+        return Objects.equals(userDAOObj, that.userDAOObj) && Objects.equals(authDAOObj, that.authDAOObj);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userDAOObj, authDAOObj);
     }
 }
