@@ -1,6 +1,5 @@
 package service;
 
-import service.UserService;
 import dataaccess.*;
 import model.*;
 import org.junit.jupiter.api.Assertions;
@@ -11,13 +10,13 @@ import org.junit.jupiter.api.Test;
 import javax.xml.crypto.Data;
 
 public class UserServiceTests {
-    UserService testServiceObj;
+    GameService testServiceObj;
     UserData player1Data;
     UserData player2Data;
     UserData player3Data;
     @BeforeEach
     public void setUp() {
-        testServiceObj = new UserService();
+        testServiceObj = new GameService();
         testServiceObj.clearUsers();
         player1Data = new UserData("player1_username", "player1_password", "player1_email");
         player2Data = new UserData("player2_username", "player2_password", "player2_email");

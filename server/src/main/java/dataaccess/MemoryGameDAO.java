@@ -10,7 +10,7 @@ public class MemoryGameDAO implements GameDAO{
     static Collection<GameData> gameDataBase = new ArrayList<>();
 
     @Override
-    public void clearUserDataBase() {
+    public void clearGameDataBase() {
         gameDataBase.clear();
     }
 

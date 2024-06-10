@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface GameDAO {
     //A method for clearing all data from the database. This is used during testing.
-    void clearUserDataBase();
+    void clearGameDataBase();
     //  Create a new game.
     void createGame(int gameID, String gameName) throws DataAccessException;
     // Retrieve a specified game with the given game ID.
