@@ -21,7 +21,7 @@ public class MemoryGameDAO implements GameDAO{
         for(GameData currentGame: gameDataBase){
             if(currentGame.getGameID() == brandNewGame.getGameID() ||
             currentGame.getGameName().equals(brandNewGame.getGameName())){
-                throw new DataAccessException("that game already exists");
+                throw new DataAccessException("Error: unauthorized");
             }
         }
         gameDataBase.add(brandNewGame);
@@ -34,7 +34,7 @@ public class MemoryGameDAO implements GameDAO{
                 return currentGame;
             }
         }
-        throw new DataAccessException("that game doesn't exists");
+        throw new DataAccessException("Error: unauthorized");
     }
 
     @Override
@@ -49,13 +49,15 @@ public class MemoryGameDAO implements GameDAO{
         for(GameData currentGame: gameDataBase){
             if(currentGame.getGameID() == (Integer.parseInt(gameID))){
                 foundGame = true;
-                currentGame = updatedGameObject;
-                //update game here
+                ArrayList <GameData> tempGameList = (ArrayList<GameData>) gameDataBase;
+                int currentGameIndex = tempGameList.indexOf(currentGame);
+                tempGameList.set(currentGameIndex, updatedGameObject);
+                gameDataBase = tempGameList;
                 break;
             }
         }
         if(!foundGame){
-            throw new DataAccessException("that game doesn't exists");
+            throw new DataAccessException("Error: unauthorized" );
         }
     }
 }

@@ -29,7 +29,7 @@ public class MemoryAuthDAO implements AuthDAO{
                 return currentAuthToken;
             }
         }
-        throw new DataAccessException("AuthToken does not exist\n");
+        throw new DataAccessException("Error: unauthorized");
     }
 
     @Override
@@ -42,7 +42,7 @@ public class MemoryAuthDAO implements AuthDAO{
             }
         }
         if(!authTokenDataBase.remove(tempAuthVar)){
-            throw new DataAccessException("the AuthObj doesn't exist\n");
+            throw new DataAccessException("Error: unauthorized");
         }
     }
 }

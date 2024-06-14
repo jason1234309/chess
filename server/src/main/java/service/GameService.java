@@ -1,8 +1,7 @@
 package service;
 import dataaccess.*;
-import model.AuthData;
-import model.GameData;
-import model.UserData;
+import model.*;
+import ResponseRequest.*;
 import chess.ChessGame;
 
 import javax.xml.crypto.Data;
@@ -18,67 +17,107 @@ public class GameService {
 
     int gameIdNumOffset = 0;
 
-    public AuthData register(UserData user) throws DataAccessException {
-        userDAOObj.createUser(user.getUsername(), user.getPassword(), user.getPassword());
-        AuthData brandNewAuthToken = new AuthData(UUID.randomUUID().toString(),user.getUsername());
-        authDAOObj.createAuth(brandNewAuthToken.getAuthToken(), brandNewAuthToken.getUsername());
-        return brandNewAuthToken;
-    }
-    public AuthData login(UserData user) throws DataAccessException {
-        if(userDAOObj.getUser(user.getUsername()) == null){
-            throw new DataAccessException("username doesnt exist");
-        }
-        UserData dataBaseUser = userDAOObj.getUser(user.getUsername());
-        if(!dataBaseUser.getPassword().equals(user.getPassword())){
-            throw new DataAccessException("Incorrect password");
-        }
-        AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
-        authDAOObj.createAuth(brandNewAuthToken.getAuthToken(), brandNewAuthToken.getUsername());
-        return brandNewAuthToken;
-    }
-    public void logout(AuthData userAuthToken) throws DataAccessException {
-        if(authDAOObj.getAuth(userAuthToken.getAuthToken()) == null){
-            throw new DataAccessException("auth doesnt exist");
-        }
-        authDAOObj.deleteAuth(userAuthToken.getAuthToken());
-    }
-    public void clearUsers(){
+    public ErrorResponce clearDatabases(){
+        gameDAOObj.clearGameDataBase();
         userDAOObj.clearUserDataBase();
         authDAOObj.clearAuthDataBase();
+        return new ErrorResponce(null);
     }
-    public String CreateGame(AuthData userAuth, String gameName) throws DataAccessException {
-        if(authDAOObj.getAuth(userAuth.getAuthToken()) == null){
-            throw new DataAccessException("auth doesnt exist");
+
+    public ResponseAuth register(UserData user) {
+        try{
+            userDAOObj.createUser(user.getUsername(), user.getPassword(), user.getPassword());
+        }catch(DataAccessException e){
+            return new ResponseAuth(null, null, e.getMessage());
         }
-        gameDAOObj.createGame(gameIdNumOffset, gameName);
-        gameIdNumOffset += 1;
-        return Integer.toString(gameIdNumOffset-1);
+        try{
+            AuthData brandNewAuthToken = new AuthData(UUID.randomUUID().toString(),user.getUsername());
+            authDAOObj.createAuth(brandNewAuthToken.getAuthToken(), brandNewAuthToken.getUsername());
+            return new ResponseAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken(), null);
+        }catch(DataAccessException e){
+            return new ResponseAuth(null, null, e.getMessage());
+        }
     }
-    public Collection<GameData> ListGames(AuthData userAuth) throws DataAccessException {
-        if(authDAOObj.getAuth(userAuth.getAuthToken()) == null){
-            throw new DataAccessException("auth doesnt exist");
+    public ResponseAuth login(UserData user) {
+        try{
+            UserData dataBaseUser = userDAOObj.getUser(user.getUsername());
+            if(!dataBaseUser.getPassword().equals(user.getPassword())){
+                return new ResponseAuth(null, null, "Error: unauthorized");
+            }
+        }catch(DataAccessException e){
+            return new ResponseAuth(null, null, e.getMessage());
+        }
+        try{
+            AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
+            authDAOObj.createAuth(brandNewAuthToken.getAuthToken(), brandNewAuthToken.getUsername());
+            return new ResponseAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken(), null);
+        }catch(DataAccessException e){
+            return new ResponseAuth(null, null, e.getMessage());
+        }
+    }
+    public ErrorResponce logout(AuthData userAuthToken){
+        try{
+            authDAOObj.getAuth(userAuthToken.getAuthToken());
+            authDAOObj.deleteAuth(userAuthToken.getAuthToken());
+            return new ErrorResponce(null);
+        }catch(DataAccessException e){
+            return new ErrorResponce(e.getMessage());
+        }
+    }
+
+    public ErrorResponce CreateGame(AuthData userAuth, String gameName) {
+        try{
+            authDAOObj.getAuth(userAuth.getAuthToken());
+        }catch(DataAccessException e){
+            return new ErrorResponce(e.getMessage());
+        }
+        try{
+            gameDAOObj.createGame(gameIdNumOffset, gameName);
+            gameIdNumOffset += 1;
+            return new ErrorResponce(Integer.toString(gameIdNumOffset-1));
+        }catch(DataAccessException e){
+            return new ErrorResponce(e.getMessage());
+        }
+
+    }
+    public GameListResponse ListGames(AuthData userAuth){
+        try{
+            authDAOObj.getAuth(userAuth.getAuthToken());
+        }catch(DataAccessException e){
+            return new GameListResponse(null, e.getMessage());
         }
         Collection<GameData> totalGameList = new ArrayList<>();
-        for(GameData currentGame : gameDAOObj.listGames()){
-            totalGameList.add(currentGame);
-        }
-        return totalGameList;
+        totalGameList.addAll(gameDAOObj.listGames());
+        return new GameListResponse(totalGameList, null);
     }
-    public void JoinGame(AuthData userAuth, ChessGame.TeamColor playerColor, String gameId) throws DataAccessException {
-        if(authDAOObj.getAuth(userAuth.getAuthToken()) == null){
-            throw new DataAccessException("auth doesnt exist");
+    public ErrorResponce JoinGame(AuthData userAuth, ChessGame.TeamColor playerColor, String gameId) throws DataAccessException {
+        try{
+            authDAOObj.getAuth(userAuth.getAuthToken());
+        }catch(DataAccessException e){
+            return new ErrorResponce(e.getMessage());
         }
-        GameData currentGame = gameDAOObj.getGame(gameId);
-        if(playerColor == ChessGame.TeamColor.BLACK){
-            currentGame.setBlackUsername(userAuth.getUsername());
-        }
-        else{
-            currentGame.setWhiteUsername(userAuth.getUsername());
-        }
-        gameDAOObj.updateGame(gameId, currentGame);
-    }
-    public void clearGames(){
-        gameDAOObj.clearGameDataBase();
+        try{
+            GameData currentGame = gameDAOObj.getGame(gameId);
+            if(playerColor == ChessGame.TeamColor.BLACK){
+                if(currentGame.getBlackUsername() == null){
+                    currentGame.setBlackUsername(userAuth.getUsername());
+                }else{
+                    return new ErrorResponce("Error: already taken");
+                }
 
+            }
+            else{
+                if(currentGame.getWhiteUsername() == null){
+                    currentGame.setWhiteUsername(userAuth.getUsername());
+                }else{
+                    return new ErrorResponce("Error: already taken");
+                }
+            }
+            gameDAOObj.updateGame(gameId, currentGame);
+            return new ErrorResponce(null);
+
+        }catch(DataAccessException e){
+            return new ErrorResponce(e.getMessage());
+        }
     }
 }

@@ -1,6 +1,8 @@
 package server;
 
+import ResponseRequest.*;
 import dataaccess.DataAccessException;
+import model.*;
 import spark.*;
 import com.google.gson.Gson;
 import service.GameService;
@@ -29,19 +31,21 @@ public class Server {
         return Spark.port();
     }
 
-    public Object ClearApplication(Request req, Response res){
-        databaseServiceObj.clearUsers();
-        databaseServiceObj.clearGames();
-        return "not implemented";
+    public Object ClearApplication(Request req, Response res){   // THIS IS INCOMPLETE, NO ERROR RESPONSE
+        ErrorResponce clearMessage = databaseServiceObj.clearDatabases();
+        res.status(200);
+        return new Gson().toJson(clearMessage);
     }
     public Object Register(Request req, Response res){
-        try{
-            databaseServiceObj.register(req.body());
-        }
-        catch(DataAccessException e){
-            return "error";
-        }
-        return "not implemented";
+            UserData newUser = serializer.fromJson(req.body(), UserData.class);
+            ResponseAuth registerAuthresponse = databaseServiceObj.register(newUser);
+            if(registerAuthresponse.message() == null){
+                res.status(200);
+                return new Gson().toJson(registerAuthresponse);
+            }else{
+                res.status(403);
+                return new Gson().toJson(registerAuthresponse);
+            }
     }
     public Object Login(Request req, Response res){
         return "not implemented";

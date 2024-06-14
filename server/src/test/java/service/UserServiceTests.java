@@ -1,5 +1,6 @@
 package service;
 
+import ResponseRequest.ResponseAuth;
 import dataaccess.*;
 import model.*;
 import org.junit.jupiter.api.Assertions;
@@ -26,9 +27,9 @@ public class UserServiceTests {
     @Test
     @DisplayName("register player 1")
     public void RegisterPlayer1() throws DataAccessException{
-        AuthData registerAuth = testServiceObj.register(player1Data);
+        ResponseAuth registerAuth = testServiceObj.register(player1Data);
         AuthData loginAuth = testServiceObj.login(player1Data);
-        testServiceObj.logout(registerAuth);
+        testServiceObj.logout(new AuthData(registerAuth.username(), registerAuth.authToken()));
         testServiceObj.logout(loginAuth);
 
     }
@@ -37,49 +38,49 @@ public class UserServiceTests {
     @Test
     @DisplayName("register multiple players")
     public void RegisterMultiplePlayers()throws DataAccessException{
-       AuthData player1RegisteredAuth = testServiceObj.register(player1Data);
-       AuthData player2RegisteredAuth = testServiceObj.register(player2Data);
-       AuthData player3RegisteredAuth = testServiceObj.register(player3Data);
+       ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+       ResponseAuth player2RegisteredAuth = testServiceObj.register(player2Data);
+       ResponseAuth player3RegisteredAuth = testServiceObj.register(player3Data);
 
-       testServiceObj.logout(player1RegisteredAuth);
-       testServiceObj.logout(player2RegisteredAuth);
-       testServiceObj.logout(player3RegisteredAuth);
+       testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+       testServiceObj.logout(new AuthData(player2RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+       testServiceObj.logout(new AuthData(player3RegisteredAuth.username(), player1RegisteredAuth.authToken()));
     }
     @Test
     @DisplayName("register same player twice")
     public void RegisterSamePlayerTwice()throws DataAccessException{
-        AuthData player1RegisteredAuth = testServiceObj.register(player1Data);
+        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.register(player1Data));
     }
     @Test
     @DisplayName("reg/logout/login player 1")
     public void LoginPlayer1()throws DataAccessException{
-        AuthData player1RegisteredAuth = testServiceObj.register(player1Data);
-        testServiceObj.logout(player1RegisteredAuth);
+        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         AuthData player1LoginAuth = testServiceObj.login(player1Data);
         testServiceObj.logout(player1LoginAuth);
     }
     @Test
     @DisplayName("login wrong player")
     public void LoginWrongPlayer()throws DataAccessException{
-        AuthData player1RegisteredAuth = testServiceObj.register(player1Data);
-        testServiceObj.logout(player1RegisteredAuth);
+        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         Assertions.assertThrows(DataAccessException.class, ()-> testServiceObj.login(player2Data));
     }
     @Test
     @DisplayName("login wrong password")
     public void LoginWrongPassword()throws DataAccessException{
-        AuthData player1RegisteredAuth = testServiceObj.register(player1Data);
-        testServiceObj.logout(player1RegisteredAuth);
+        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         UserData mixedUser = new UserData(player1Data.getUsername(), player2Data.getPassword(), player3Data.getEmail());
         Assertions.assertThrows(DataAccessException.class, ()-> testServiceObj.login(mixedUser));
     }
     @Test
     @DisplayName("reg/logout/login multiple players")
     public void LoginMulitplePlayers()throws DataAccessException{
-        AuthData player1RegisteredAuth = testServiceObj.register(player1Data);
-        AuthData player2RegisteredAuth = testServiceObj.register(player2Data);
-        AuthData player3RegisteredAuth = testServiceObj.register(player3Data);
+        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+        ResponseAuth player2RegisteredAuth = testServiceObj.register(player2Data);
+        ResponseAuth player3RegisteredAuth = testServiceObj.register(player3Data);
         AuthData player1LoginAuth = testServiceObj.login(player1Data);
         AuthData player2LoginAuth = testServiceObj.login(player2Data);
         AuthData player3LoginAuth = testServiceObj.login(player3Data);
@@ -90,8 +91,8 @@ public class UserServiceTests {
     @Test
     @DisplayName("reg/logout/login player 1")
     public void LoginPlayer1ThreeTimes()throws DataAccessException{
-        AuthData player1RegisteredAuth = testServiceObj.register(player1Data);
-        testServiceObj.logout(player1RegisteredAuth);
+        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         AuthData player1LoginAuth1 = testServiceObj.login(player1Data);
         AuthData player1LoginAuth2 = testServiceObj.login(player1Data);
         AuthData player1LoginAuth3 = testServiceObj.login(player1Data);
@@ -102,9 +103,9 @@ public class UserServiceTests {
     @Test
     @DisplayName("logout player 1 twice")
     public void LogoutPlayer1Twice()throws DataAccessException{
-        AuthData player1RegisteredAuth = testServiceObj.register(player1Data);
-        testServiceObj.logout(player1RegisteredAuth);
-        Assertions.assertThrows(DataAccessException.class, () -> testServiceObj.logout(player1RegisteredAuth));
+        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        Assertions.assertThrows(DataAccessException.class, () -> testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken())));
         AuthData player1LoginAuth = testServiceObj.login(player1Data);
         testServiceObj.logout(player1LoginAuth);
         Assertions.assertThrows(DataAccessException.class, () -> testServiceObj.logout(player1LoginAuth));

@@ -1,4 +1,5 @@
 package service;
+import ResponseRequest.ResponseAuth;
 import chess.ChessGame;
 import dataaccess.*;
 import model.*;
@@ -29,61 +30,61 @@ public class GameServiceTests {
     @Test
     @DisplayName("create game")
     public void CreateGame() throws DataAccessException{
-        AuthData registerAuth = testServiceObj.register(player1Data);
-        String game1ID = testServiceObj.CreateGame(registerAuth, "firstGame");
+        ResponseAuth registerAuth = testServiceObj.register(player1Data);
+        String game1ID = testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         Assertions.assertEquals(game1ID, "0");
-        Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.CreateGame(registerAuth, "firstGame"));
+        Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame"));
 
     }
     @Test
     @DisplayName("create game with invalid auth")
     public void CreateGameInvalidAuth() throws DataAccessException{
-        AuthData registerAuth = testServiceObj.register(player1Data);
-        testServiceObj.logout(registerAuth);
-        Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.CreateGame(registerAuth, "firstGame"));
+        ResponseAuth registerAuth = testServiceObj.register(player1Data);
+        testServiceObj.logout(new AuthData(registerAuth.username(), registerAuth.authToken()));
+        Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame"));
 
     }
     @Test
     @DisplayName("create multiple games")
     public void CreateMultipleGames() throws DataAccessException{
-        AuthData registerAuth1 = testServiceObj.register(player1Data);
-        AuthData registerAuth2 = testServiceObj.register(player2Data);
-        String game1ID = testServiceObj.CreateGame(registerAuth1, "firstGame");
-        String game2ID = testServiceObj.CreateGame(registerAuth1, "secondGame");
-        String game3ID = testServiceObj.CreateGame(registerAuth1, "thirdGame");
+        ResponseAuth registerAuth1 = testServiceObj.register(player1Data);
+        ResponseAuth registerAuth2 = testServiceObj.register(player2Data);
+        String game1ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "firstGame");
+        String game2ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "secondGame");
+        String game3ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "thirdGame");
         Assertions.assertEquals(game1ID, "0");
         Assertions.assertEquals(game2ID, "1");
         Assertions.assertEquals(game3ID, "2");
-        String otherGame1ID = testServiceObj.CreateGame(registerAuth2, "newGame");
-        String otherGame2ID = testServiceObj.CreateGame(registerAuth2, "coolGame");
-        String otherGame3ID = testServiceObj.CreateGame(registerAuth2, "finalGame");
+        String otherGame1ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "newGame");
+        String otherGame2ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "coolGame");
+        String otherGame3ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "finalGame");
         Assertions.assertEquals(otherGame1ID, "3");
         Assertions.assertEquals(otherGame2ID, "4");
         Assertions.assertEquals(otherGame3ID, "5");
-        Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.CreateGame(registerAuth2, "firstGame"));
-        Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.CreateGame(registerAuth1, "finalGame"));
+        Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "firstGame"));
+        Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "finalGame"));
     }
     @Test
     @DisplayName("list 1 game")
     public void List1Game() throws DataAccessException{
-        AuthData registerAuth = testServiceObj.register(player1Data);
-        String game1ID = testServiceObj.CreateGame(registerAuth, "firstGame");
-        Collection<GameData> gameList = testServiceObj.ListGames(registerAuth);
+        ResponseAuth registerAuth = testServiceObj.register(player1Data);
+        String game1ID = testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
+        Collection<GameData> gameList = testServiceObj.ListGames(new AuthData(registerAuth.username(), registerAuth.authToken()));
         Assertions.assertEquals(gameList.size(), 1);
     }
     @Test
     @DisplayName("List multiple games")
     public void ListMultipleGames() throws DataAccessException{
-        AuthData registerAuth1 = testServiceObj.register(player1Data);
-        AuthData registerAuth2 = testServiceObj.register(player2Data);
-        String game1ID = testServiceObj.CreateGame(registerAuth1, "firstGame");
-        String game2ID = testServiceObj.CreateGame(registerAuth1, "secondGame");
-        String game3ID = testServiceObj.CreateGame(registerAuth1, "thirdGame");
-        String otherGame1ID = testServiceObj.CreateGame(registerAuth2, "newGame");
-        String otherGame2ID = testServiceObj.CreateGame(registerAuth2, "coolGame");
-        String otherGame3ID = testServiceObj.CreateGame(registerAuth2, "finalGame");
+        ResponseAuth registerAuth1 = testServiceObj.register(player1Data);
+        ResponseAuth registerAuth2 = testServiceObj.register(player2Data);
+        String game1ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "firstGame");
+        String game2ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "secondGame");
+        String game3ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "thirdGame");
+        String otherGame1ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "newGame");
+        String otherGame2ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "coolGame");
+        String otherGame3ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "finalGame");
 
-        Collection<GameData> gameList = testServiceObj.ListGames(registerAuth1);
+        Collection<GameData> gameList = testServiceObj.ListGames(new AuthData(registerAuth1.username(), registerAuth1.authToken()));
         Assertions.assertEquals(gameList.size(), 6);
         AuthData registerAuth3 = new AuthData("","");
         Assertions.assertThrows(DataAccessException.class,() ->testServiceObj.ListGames(registerAuth3));
@@ -91,10 +92,10 @@ public class GameServiceTests {
     @Test
     @DisplayName("white player joins")
     public void WhitePlayerJoins() throws DataAccessException{
-        AuthData registerAuth = testServiceObj.register(player1Data);
-        String game1ID = testServiceObj.CreateGame(registerAuth, "firstGame");
-        testServiceObj.JoinGame(registerAuth, ChessGame.TeamColor.WHITE, game1ID);
-        Collection<GameData> currentGames = testServiceObj.ListGames(registerAuth);
+        ResponseAuth registerAuth = testServiceObj.register(player1Data);
+        String game1ID = testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
+        testServiceObj.JoinGame(new AuthData(registerAuth.username(), registerAuth.authToken()), ChessGame.TeamColor.WHITE, game1ID);
+        Collection<GameData> currentGames = testServiceObj.ListGames(new AuthData(registerAuth.username(), registerAuth.authToken()));
         // how to check if correct element, new chess game is different object
 
     }

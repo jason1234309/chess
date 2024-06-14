@@ -19,7 +19,7 @@ public class MemoryUserDAO implements UserDAO{
             userDataBase.add(currentUser);
         }
         else{
-            throw new DataAccessException("user already exists");
+            throw new DataAccessException("Error: already taken");
         }
 
     }
@@ -31,6 +31,6 @@ public class MemoryUserDAO implements UserDAO{
                 return currentUser;
             }
         }
-        throw new DataAccessException("user does not exist");
+        throw new DataAccessException("Error: unauthorized");
     }
 }
