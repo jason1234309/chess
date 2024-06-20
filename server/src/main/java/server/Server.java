@@ -85,9 +85,9 @@ public class Server {
     }
     public Object CreateGame(Request req, Response res){
         String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
-        String gameName = serializer.fromJson(req.body(), String.class);
+        GameNameReq gameName = serializer.fromJson(req.body(), GameNameReq.class);
         AuthData tempAuthObj = new AuthData(reqAuthToken, null);
-        GameCreationResponse createGameResponce = databaseServiceObj.CreateGame(tempAuthObj, gameName);
+        GameCreationResponse createGameResponce = databaseServiceObj.CreateGame(tempAuthObj, gameName.gameName());
         if(createGameResponce.message() == null){
             res.status(200);
             return new Gson().toJson(createGameResponce);

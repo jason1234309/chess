@@ -31,7 +31,7 @@ public class GameService {
             return new ResponseAuth(null, null, e.getMessage());
         }
         try{
-            AuthData brandNewAuthToken = new AuthData(UUID.randomUUID().toString(),user.getUsername());
+            AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
             authDAOObj.createAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken());
             return new ResponseAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken(), null);
         }catch(DataAccessException e){

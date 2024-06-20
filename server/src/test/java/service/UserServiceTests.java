@@ -54,8 +54,8 @@ public class UserServiceTests {
         Assertions.assertNull(player3RegisteredAuth.message());
 
         ErrorResponce logoutPlayer1 = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
-        ErrorResponce logoutPlayer2 = testServiceObj.logout(new AuthData(player2RegisteredAuth.username(), player1RegisteredAuth.authToken()));
-        ErrorResponce logoutPlayer3 = testServiceObj.logout(new AuthData(player3RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        ErrorResponce logoutPlayer2 = testServiceObj.logout(new AuthData(player2RegisteredAuth.username(), player2RegisteredAuth.authToken()));
+        ErrorResponce logoutPlayer3 = testServiceObj.logout(new AuthData(player3RegisteredAuth.username(), player3RegisteredAuth.authToken()));
 
         Assertions.assertNull(logoutPlayer1.message());
         Assertions.assertNull(logoutPlayer2.message());
