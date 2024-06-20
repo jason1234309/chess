@@ -32,7 +32,7 @@ public class GameService {
         }
         try{
             AuthData brandNewAuthToken = new AuthData(UUID.randomUUID().toString(),user.getUsername());
-            authDAOObj.createAuth(brandNewAuthToken.getAuthToken(), brandNewAuthToken.getUsername());
+            authDAOObj.createAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken());
             return new ResponseAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken(), null);
         }catch(DataAccessException e){
             return new ResponseAuth(null, null, e.getMessage());
@@ -49,7 +49,7 @@ public class GameService {
         }
         try{
             AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
-            authDAOObj.createAuth(brandNewAuthToken.getAuthToken(), brandNewAuthToken.getUsername());
+            authDAOObj.createAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken());
             return new ResponseAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken(), null);
         }catch(DataAccessException e){
             return new ResponseAuth(null, null, e.getMessage());
@@ -65,18 +65,18 @@ public class GameService {
         }
     }
 
-    public ErrorResponce CreateGame(AuthData userAuth, String gameName) {
+    public GameCreationResponse CreateGame(AuthData userAuth, String gameName) {
         try{
             authDAOObj.getAuth(userAuth.getAuthToken());
         }catch(DataAccessException e){
-            return new ErrorResponce(e.getMessage());
+            return new GameCreationResponse(null, e.getMessage());
         }
         try{
             gameDAOObj.createGame(gameIdNumOffset, gameName);
             gameIdNumOffset += 1;
-            return new ErrorResponce(Integer.toString(gameIdNumOffset-1));
+            return new GameCreationResponse(Integer.toString(gameIdNumOffset-1), null);
         }catch(DataAccessException e){
-            return new ErrorResponce(e.getMessage());
+            return new GameCreationResponse(null, e.getMessage());
         }
 
     }
@@ -90,7 +90,7 @@ public class GameService {
         totalGameList.addAll(gameDAOObj.listGames());
         return new GameListResponse(totalGameList, null);
     }
-    public ErrorResponce JoinGame(AuthData userAuth, ChessGame.TeamColor playerColor, String gameId) throws DataAccessException {
+    public ErrorResponce JoinGame(AuthData userAuth, ChessGame.TeamColor playerColor, String gameId) {
         try{
             authDAOObj.getAuth(userAuth.getAuthToken());
         }catch(DataAccessException e){
@@ -99,7 +99,7 @@ public class GameService {
         try{
             GameData currentGame = gameDAOObj.getGame(gameId);
             if(playerColor == ChessGame.TeamColor.BLACK){
-                if(currentGame.getBlackUsername() == null){
+                if(currentGame.getBlackUsername().equals("")){
                     currentGame.setBlackUsername(userAuth.getUsername());
                 }else{
                     return new ErrorResponce("Error: already taken");
@@ -107,7 +107,7 @@ public class GameService {
 
             }
             else{
-                if(currentGame.getWhiteUsername() == null){
+                if(currentGame.getWhiteUsername().equals("")){
                     currentGame.setWhiteUsername(userAuth.getUsername());
                 }else{
                     return new ErrorResponce("Error: already taken");

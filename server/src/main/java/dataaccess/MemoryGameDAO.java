@@ -17,7 +17,7 @@ public class MemoryGameDAO implements GameDAO{
     @Override
     public void createGame(int gameID, String gameName) throws DataAccessException {
         ChessGame chessGameObj = new ChessGame();
-        GameData brandNewGame = new GameData(gameID,null,null, gameName,chessGameObj);
+        GameData brandNewGame = new GameData(gameID,"","", gameName,chessGameObj);
         for(GameData currentGame: gameDataBase){
             if(currentGame.getGameID() == brandNewGame.getGameID() ||
             currentGame.getGameName().equals(brandNewGame.getGameName())){

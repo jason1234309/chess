@@ -1,6 +1,7 @@
 package server;
 
 import ResponseRequest.*;
+import chess.ChessGame;
 import dataaccess.DataAccessException;
 import model.*;
 import spark.*;
@@ -48,19 +49,73 @@ public class Server {
             }
     }
     public Object Login(Request req, Response res){
-        return "not implemented";
+        UserData newUser = serializer.fromJson(req.body(), UserData.class);
+        ResponseAuth LoginAuthresponse = databaseServiceObj.login(newUser);
+        if(LoginAuthresponse.message() == null){
+            res.status(200);
+            return new Gson().toJson(LoginAuthresponse);
+        }else{
+            res.status(401);
+            return new Gson().toJson(LoginAuthresponse);
+        }
     }
     public Object Logout(Request req, Response res){
-        return "not implemented";
+        String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
+        AuthData tempAuthObj = new AuthData(reqAuthToken, null);
+        ErrorResponce logoutResponce = databaseServiceObj.logout(tempAuthObj);
+        if(logoutResponce.message() == null){
+            res.status(200);
+            return new Gson().toJson(logoutResponce);
+        }else{
+            res.status(401);
+            return new Gson().toJson(logoutResponce);
+        }
     }
     public Object ListGames(Request req, Response res){
-        return "not implemented";
+        String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
+        AuthData tempAuthObj = new AuthData(reqAuthToken, null);
+        GameListResponse gameListResponse = databaseServiceObj.ListGames(tempAuthObj);
+        if(gameListResponse.message() == null){
+            res.status(200);
+            return new Gson().toJson(gameListResponse);
+        }else{
+            res.status(401);
+            return new Gson().toJson(gameListResponse);
+        }
     }
     public Object CreateGame(Request req, Response res){
-        return "not implemented";
+        String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
+        String gameName = serializer.fromJson(req.body(), String.class);
+        AuthData tempAuthObj = new AuthData(reqAuthToken, null);
+        GameCreationResponse createGameResponce = databaseServiceObj.CreateGame(tempAuthObj, gameName);
+        if(createGameResponce.message() == null){
+            res.status(200);
+            return new Gson().toJson(createGameResponce);
+        }else{
+            res.status(401);
+            return new Gson().toJson(createGameResponce);
+        }
     }
     public Object JoinGame(Request req, Response res){
-        return "not implemented";
+        String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
+        JoinRequestBody reqBodyObj = serializer.fromJson(req.body(), JoinRequestBody.class);
+        AuthData tempAuthObj = new AuthData(reqAuthToken, null);
+        ErrorResponce joinGameResponce = databaseServiceObj.JoinGame(tempAuthObj, reqBodyObj.playerColor(), reqBodyObj.gameName());
+        if(joinGameResponce.message() == null){
+            res.status(200);
+            return new Gson().toJson(joinGameResponce);
+        }else{
+            if(joinGameResponce.message().equals("Error: unauthorized")){
+                res.status(401);
+                return new Gson().toJson(joinGameResponce);
+            }else if(joinGameResponce.message().equals("Error: already taken")){
+                res.status(403);
+                return new Gson().toJson(joinGameResponce);
+            }else{
+                res.status(400);
+                return new Gson().toJson(new ErrorResponce("Error: bad request"));
+            }
+        }
     }
 
     public void stop() {
