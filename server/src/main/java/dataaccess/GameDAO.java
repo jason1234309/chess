@@ -10,10 +10,10 @@ public interface GameDAO {
     //  Create a new game.
     void createGame(int gameID, String gameName) throws DataAccessException;
     // Retrieve a specified game with the given game ID.
-    GameData getGame(String gameID) throws DataAccessException;
+    GameData getGame(Integer gameID) throws DataAccessException;
     // Retrieve all games.
     Collection<GameData> listGames();
     //  Updates a chess game. It should replace the chess game string corresponding to a given gameID.
     //  This is used when players join a game or when a move is made.
-    void updateGame(String gameID, GameData updatedGameObject)throws DataAccessException;
+    void updateGame(Integer gameID, GameData updatedGameObject)throws DataAccessException;
 }

@@ -15,7 +15,7 @@ public class GameService {
     static AuthDAO authDAOObj = new MemoryAuthDAO();
     static GameDAO gameDAOObj = new MemoryGameDAO();
 
-    int gameIdNumOffset = 0;
+    int gameIdNumOffset = 1;
 
     public ErrorResponce clearDatabases(){
         gameDAOObj.clearGameDataBase();
@@ -25,6 +25,9 @@ public class GameService {
     }
 
     public ResponseAuth register(UserData user) {
+        if(user.getUsername() == null || user.getPassword() == null || user.getEmail() == null){
+            return new ResponseAuth(null, null, "Error: bad request");
+        }
         try{
             userDAOObj.createUser(user.getUsername(), user.getPassword(), user.getPassword());
         }catch(DataAccessException e){
@@ -66,6 +69,9 @@ public class GameService {
     }
 
     public GameCreationResponse CreateGame(AuthData userAuth, String gameName) {
+        if(gameName == null){
+            return new GameCreationResponse(null, "Error: bad request");
+        }
         try{
             authDAOObj.getAuth(userAuth.getAuthToken());
         }catch(DataAccessException e){
@@ -74,7 +80,7 @@ public class GameService {
         try{
             gameDAOObj.createGame(gameIdNumOffset, gameName);
             gameIdNumOffset += 1;
-            return new GameCreationResponse(Integer.toString(gameIdNumOffset-1), null);
+            return new GameCreationResponse(gameIdNumOffset-1, null);
         }catch(DataAccessException e){
             return new GameCreationResponse(null, e.getMessage());
         }
@@ -88,27 +94,34 @@ public class GameService {
         }
         Collection<GameData> totalGameList = new ArrayList<>();
         totalGameList.addAll(gameDAOObj.listGames());
+        for(GameData currentGame:totalGameList){
+            currentGame.setChessGame(null);
+        }
         return new GameListResponse(totalGameList, null);
     }
-    public ErrorResponce JoinGame(AuthData userAuth, ChessGame.TeamColor playerColor, String gameId) {
+    public ErrorResponce JoinGame(AuthData userAuth, ChessGame.TeamColor playerColor, Integer gameId) {
+        if(playerColor == null || gameId == null){
+            return new ErrorResponce("Error: bad request");
+        }
         try{
-            authDAOObj.getAuth(userAuth.getAuthToken());
+            AuthData fullUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
         }catch(DataAccessException e){
             return new ErrorResponce(e.getMessage());
         }
         try{
+            AuthData fullUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
             GameData currentGame = gameDAOObj.getGame(gameId);
             if(playerColor == ChessGame.TeamColor.BLACK){
-                if(currentGame.getBlackUsername().equals("")){
-                    currentGame.setBlackUsername(userAuth.getUsername());
+                if(currentGame.getBlackUsername() == null){
+                    currentGame.setBlackUsername(fullUserAuth.getUsername());
                 }else{
                     return new ErrorResponce("Error: already taken");
                 }
 
             }
             else{
-                if(currentGame.getWhiteUsername().equals("")){
-                    currentGame.setWhiteUsername(userAuth.getUsername());
+                if(currentGame.getWhiteUsername() == null){
+                    currentGame.setWhiteUsername(fullUserAuth.getUsername());
                 }else{
                     return new ErrorResponce("Error: already taken");
                 }

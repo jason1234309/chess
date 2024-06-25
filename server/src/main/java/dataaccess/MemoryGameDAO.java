@@ -17,7 +17,7 @@ public class MemoryGameDAO implements GameDAO{
     @Override
     public void createGame(int gameID, String gameName) throws DataAccessException {
         ChessGame chessGameObj = new ChessGame();
-        GameData brandNewGame = new GameData(gameID,"","", gameName,chessGameObj);
+        GameData brandNewGame = new GameData(gameID,null,null, gameName,chessGameObj);
         for(GameData currentGame: gameDataBase){
             if(currentGame.getGameID() == brandNewGame.getGameID() ||
             currentGame.getGameName().equals(brandNewGame.getGameName())){
@@ -28,9 +28,9 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public GameData getGame(String gameID) throws DataAccessException {
+    public GameData getGame(Integer gameID) throws DataAccessException {
         for(GameData currentGame: gameDataBase){
-            if(!currentGame.getGameName().equals(gameID)){
+            if(currentGame.getGameID() == gameID){
                 return currentGame;
             }
         }
@@ -43,11 +43,11 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public void updateGame(String gameID, GameData updatedGameObject) throws DataAccessException {
+    public void updateGame(Integer gameID, GameData updatedGameObject) throws DataAccessException {
         boolean foundGame = false;
         GameData desiredGame;
         for(GameData currentGame: gameDataBase){
-            if(currentGame.getGameID() == (Integer.parseInt(gameID))){
+            if(currentGame.getGameID() == gameID){
                 foundGame = true;
                 ArrayList <GameData> tempGameList = (ArrayList<GameData>) gameDataBase;
                 int currentGameIndex = tempGameList.indexOf(currentGame);

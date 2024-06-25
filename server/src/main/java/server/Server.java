@@ -44,8 +44,14 @@ public class Server {
                 res.status(200);
                 return new Gson().toJson(registerAuthresponse);
             }else{
-                res.status(403);
-                return new Gson().toJson(registerAuthresponse);
+                if(registerAuthresponse.message().equals("Error: bad request")){
+                    res.status(400);
+                    return new Gson().toJson(registerAuthresponse);
+                }else{
+                    res.status(403);
+                    return new Gson().toJson(registerAuthresponse);
+                }
+
             }
     }
     public Object Login(Request req, Response res){
@@ -60,8 +66,8 @@ public class Server {
         }
     }
     public Object Logout(Request req, Response res){
-        String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
-        AuthData tempAuthObj = new AuthData(reqAuthToken, null);
+        String reqAuthToken = req.headers("authorization");
+        AuthData tempAuthObj = new AuthData(null, reqAuthToken);
         ErrorResponce logoutResponce = databaseServiceObj.logout(tempAuthObj);
         if(logoutResponce.message() == null){
             res.status(200);
@@ -72,8 +78,8 @@ public class Server {
         }
     }
     public Object ListGames(Request req, Response res){
-        String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
-        AuthData tempAuthObj = new AuthData(reqAuthToken, null);
+        String reqAuthToken = req.headers("authorization");
+        AuthData tempAuthObj = new AuthData(null, reqAuthToken);
         GameListResponse gameListResponse = databaseServiceObj.ListGames(tempAuthObj);
         if(gameListResponse.message() == null){
             res.status(200);
@@ -84,23 +90,28 @@ public class Server {
         }
     }
     public Object CreateGame(Request req, Response res){
-        String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
+        String reqAuthToken = req.headers("authorization");
         GameNameReq gameName = serializer.fromJson(req.body(), GameNameReq.class);
-        AuthData tempAuthObj = new AuthData(reqAuthToken, null);
+        AuthData tempAuthObj = new AuthData(null, reqAuthToken);
         GameCreationResponse createGameResponce = databaseServiceObj.CreateGame(tempAuthObj, gameName.gameName());
         if(createGameResponce.message() == null){
             res.status(200);
             return new Gson().toJson(createGameResponce);
         }else{
-            res.status(401);
-            return new Gson().toJson(createGameResponce);
+            if(createGameResponce.message().equals("Error: bad request")){
+                res.status(400);
+                return new Gson().toJson(createGameResponce);
+            }else{
+                res.status(401);
+                return new Gson().toJson(createGameResponce);
+            }
         }
     }
     public Object JoinGame(Request req, Response res){
-        String reqAuthToken = serializer.fromJson(req.headers("authorization"), String.class);
+        String reqAuthToken = req.headers("authorization");
         JoinRequestBody reqBodyObj = serializer.fromJson(req.body(), JoinRequestBody.class);
-        AuthData tempAuthObj = new AuthData(reqAuthToken, null);
-        ErrorResponce joinGameResponce = databaseServiceObj.JoinGame(tempAuthObj, reqBodyObj.playerColor(), reqBodyObj.gameName());
+        AuthData tempAuthObj = new AuthData(null, reqAuthToken);
+        ErrorResponce joinGameResponce = databaseServiceObj.JoinGame(tempAuthObj, reqBodyObj.playerColor(), reqBodyObj.gameID());
         if(joinGameResponce.message() == null){
             res.status(200);
             return new Gson().toJson(joinGameResponce);
@@ -113,7 +124,7 @@ public class Server {
                 return new Gson().toJson(joinGameResponce);
             }else{
                 res.status(400);
-                return new Gson().toJson(new ErrorResponce("Error: bad request"));
+                return new Gson().toJson(joinGameResponce);
             }
         }
     }

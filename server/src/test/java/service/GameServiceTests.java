@@ -40,7 +40,7 @@ public class GameServiceTests {
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         GameCreationResponse duplicateError = testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
-        Assertions.assertEquals(game1ID.gameID(), "0");
+        Assertions.assertEquals(game1ID.gameID(), 1);
         Assertions.assertEquals(duplicateError.message(),unauthorizedError.message());
 
     }
@@ -61,15 +61,15 @@ public class GameServiceTests {
         GameCreationResponse game1ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "firstGame");
         GameCreationResponse game2ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "secondGame");
         GameCreationResponse game3ID = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "thirdGame");
-        Assertions.assertEquals(game1ID.gameID(), "0");
-        Assertions.assertEquals(game2ID.gameID(), "1");
-        Assertions.assertEquals(game3ID.gameID(), "2");
+        Assertions.assertEquals(game1ID.gameID(), 1);
+        Assertions.assertEquals(game2ID.gameID(), 2);
+        Assertions.assertEquals(game3ID.gameID(), 3);
         GameCreationResponse otherGame1ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "newGame");
         GameCreationResponse otherGame2ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "coolGame");
         GameCreationResponse otherGame3ID = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "finalGame");
-        Assertions.assertEquals(otherGame1ID.gameID(), "3");
-        Assertions.assertEquals(otherGame2ID.gameID(), "4");
-        Assertions.assertEquals(otherGame3ID.gameID(), "5");
+        Assertions.assertEquals(otherGame1ID.gameID(), 4);
+        Assertions.assertEquals(otherGame2ID.gameID(), 5);
+        Assertions.assertEquals(otherGame3ID.gameID(), 6);
         GameCreationResponse duplicateGame1 = testServiceObj.CreateGame(new AuthData(registerAuth2.username(), registerAuth2.authToken()), "firstGame");
         GameCreationResponse duplicateGame2 = testServiceObj.CreateGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "finalGame");
         Assertions.assertEquals(duplicateGame1.message(), unauthorizedError.message());
@@ -115,7 +115,8 @@ public class GameServiceTests {
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         ErrorResponce whiteJoined = testServiceObj.JoinGame(new AuthData(registerAuth.username(), registerAuth.authToken()), ChessGame.TeamColor.WHITE, game1ID.gameID());
-        Assertions.assertEquals(whiteJoined, new ErrorResponce(null));
+        Assertions.assertEquals(new ErrorResponce(null), whiteJoined);
+
 
     }
     @Test
