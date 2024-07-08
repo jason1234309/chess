@@ -6,10 +6,10 @@ import dataaccess.DataAccessException;
 import model.*;
 import spark.*;
 import com.google.gson.Gson;
-import service.GameService;
+import service.AllServices;
 
 public class Server {
-    GameService databaseServiceObj = new GameService();
+    AllServices databaseServiceObj = new AllServices();
     Gson serializer = new Gson();
 
     public int run(int desiredPort) {

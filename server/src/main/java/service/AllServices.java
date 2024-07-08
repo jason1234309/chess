@@ -10,17 +10,28 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
 
-public class GameService {
-    static UserDAO userDAOObj = new MemoryUserDAO();
+public class AllServices {
+    public AllServices(){
+        try{
+            userDAOObj = new SqlUserDAO();
+        }catch(DataAccessException ex){
+            // put a print statment here
+        }
+    }
+    static UserDAO userDAOObj;
     static AuthDAO authDAOObj = new MemoryAuthDAO();
     static GameDAO gameDAOObj = new MemoryGameDAO();
 
     int gameIdNumOffset = 1;
 
     public ErrorResponce clearDatabases(){
-        gameDAOObj.clearGameDataBase();
-        userDAOObj.clearUserDataBase();
-        authDAOObj.clearAuthDataBase();
+        try{
+            gameDAOObj.clearGameDataBase();
+            userDAOObj.clearUserDataBase();
+            authDAOObj.clearAuthDataBase();
+        }catch(DataAccessException ex){
+            return new ErrorResponce(ex.getMessage());
+        }
         return new ErrorResponce(null);
     }
 
@@ -93,11 +104,15 @@ public class GameService {
             return new GameListResponse(null, e.getMessage());
         }
         Collection<GameData> totalGameList = new ArrayList<>();
-        totalGameList.addAll(gameDAOObj.listGames());
-        for(GameData currentGame:totalGameList){
-            currentGame.setChessGame(null);
+        try{
+            totalGameList.addAll(gameDAOObj.listGames());
+            for(GameData currentGame:totalGameList){
+                currentGame.setChessGame(null);
+            }
+            return new GameListResponse(totalGameList, null);
+        }catch(DataAccessException ex){
+            return new GameListResponse(null, ex.getMessage());
         }
-        return new GameListResponse(totalGameList, null);
     }
     public ErrorResponce JoinGame(AuthData userAuth, ChessGame.TeamColor playerColor, Integer gameId) {
         if(playerColor == null || gameId == null){

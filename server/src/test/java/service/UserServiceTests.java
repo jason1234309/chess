@@ -9,7 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class UserServiceTests {
-    GameService testServiceObj;
+    AllServices testServiceObj;
     UserData player1Data;
     UserData player2Data;
     UserData player3Data;
@@ -18,7 +18,7 @@ public class UserServiceTests {
     ErrorResponce unauthorizedResError;
     @BeforeEach
     public void setUp() {
-        testServiceObj = new GameService();
+        testServiceObj = new AllServices();
         testServiceObj.clearDatabases();
         player1Data = new UserData("player1_username", "player1_password", "player1_email");
         player2Data = new UserData("player2_username", "player2_password", "player2_email");
