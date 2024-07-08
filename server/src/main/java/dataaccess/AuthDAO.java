@@ -4,7 +4,7 @@ import model.AuthData;
 
 public interface AuthDAO {
     //A method for clearing all data from the database. This is used during testing.
-    void clearAuthDataBase();
+    void clearAuthDataBase()throws DataAccessException;
     // Create a new authorization.
     void createAuth(String Username, String authToken) throws DataAccessException;
     // Retrieve an authorization given an authToken.
