@@ -8,6 +8,7 @@ import java.util.Collection;
 
 public class MemoryGameDAO implements GameDAO{
     static Collection<GameData> gameDataBase = new ArrayList<>();
+    static int gameID = 1;
 
     @Override
     public void clearGameDataBase() {
@@ -15,7 +16,7 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public void createGame(int gameID, String gameName) throws DataAccessException {
+    public int createGame(String gameName) throws DataAccessException {
         ChessGame chessGameObj = new ChessGame();
         GameData brandNewGame = new GameData(gameID,null,null, gameName,chessGameObj);
         for(GameData currentGame: gameDataBase){
@@ -25,6 +26,8 @@ public class MemoryGameDAO implements GameDAO{
             }
         }
         gameDataBase.add(brandNewGame);
+        gameID++;
+        return gameID -1;
     }
 
     @Override

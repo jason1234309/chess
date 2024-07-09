@@ -3,6 +3,7 @@ import dataaccess.*;
 import model.*;
 import ResponseRequest.*;
 import chess.ChessGame;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.xml.crypto.Data;
 import java.util.ArrayList;
@@ -15,14 +16,22 @@ public class AllServices {
         try{
             userDAOObj = new SqlUserDAO();
         }catch(DataAccessException ex){
-            // put a print statment here
+            System.out.println("Could not create user DAO");
+        }
+        try{
+            authDAOObj = new SqlAuthDAO();
+        }catch(DataAccessException ex){
+            System.out.println("Could not create Auth DAO");
+        }
+        try{
+            gameDAOObj = new SqlGameDAO();
+        }catch(DataAccessException ex){
+            System.out.println("Could not create game DAO");
         }
     }
     static UserDAO userDAOObj;
-    static AuthDAO authDAOObj = new MemoryAuthDAO();
-    static GameDAO gameDAOObj = new MemoryGameDAO();
-
-    int gameIdNumOffset = 1;
+    static AuthDAO authDAOObj;
+    static GameDAO gameDAOObj;
 
     public ErrorResponce clearDatabases(){
         try{
@@ -40,7 +49,8 @@ public class AllServices {
             return new ResponseAuth(null, null, "Error: bad request");
         }
         try{
-            userDAOObj.createUser(user.getUsername(), user.getPassword(), user.getPassword());
+            String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
+            userDAOObj.createUser(user.getUsername(), hashedPassword, user.getPassword());
         }catch(DataAccessException e){
             return new ResponseAuth(null, null, e.getMessage());
         }
@@ -55,7 +65,10 @@ public class AllServices {
     public ResponseAuth login(UserData user) {
         try{
             UserData dataBaseUser = userDAOObj.getUser(user.getUsername());
-            if(!dataBaseUser.getPassword().equals(user.getPassword())){
+            if(dataBaseUser == null){
+                return new ResponseAuth(null, null, "Error: unauthorized");
+            }
+            if(!BCrypt.checkpw(user.getPassword(), dataBaseUser.getPassword())){
                 return new ResponseAuth(null, null, "Error: unauthorized");
             }
         }catch(DataAccessException e){
@@ -71,7 +84,10 @@ public class AllServices {
     }
     public ErrorResponce logout(AuthData userAuthToken){
         try{
-            authDAOObj.getAuth(userAuthToken.getAuthToken());
+           AuthData returnedAuth = authDAOObj.getAuth(userAuthToken.getAuthToken());
+           if(returnedAuth == null){
+               return new ErrorResponce("Error: unauthorized");
+           }
             authDAOObj.deleteAuth(userAuthToken.getAuthToken());
             return new ErrorResponce(null);
         }catch(DataAccessException e){
@@ -89,9 +105,8 @@ public class AllServices {
             return new GameCreationResponse(null, e.getMessage());
         }
         try{
-            gameDAOObj.createGame(gameIdNumOffset, gameName);
-            gameIdNumOffset += 1;
-            return new GameCreationResponse(gameIdNumOffset-1, null);
+            int gameId = gameDAOObj.createGame(gameName);
+            return new GameCreationResponse(gameId, null);
         }catch(DataAccessException e){
             return new GameCreationResponse(null, e.getMessage());
         }
