@@ -34,8 +34,13 @@ public class Server {
 
     public Object ClearApplication(Request req, Response res){   // THIS IS INCOMPLETE, NO ERROR RESPONSE
         ErrorResponce clearMessage = databaseServiceObj.clearDatabases();
-        res.status(200);
-        return new Gson().toJson(clearMessage);
+        if(clearMessage == null){
+            res.status(200);
+            return new Gson().toJson(clearMessage);
+        }else{
+            res.status(500);
+            return new Gson().toJson(clearMessage);
+        }
     }
     public Object Register(Request req, Response res){
             UserData newUser = serializer.fromJson(req.body(), UserData.class);
@@ -47,8 +52,11 @@ public class Server {
                 if(registerAuthresponse.message().equals("Error: bad request")){
                     res.status(400);
                     return new Gson().toJson(registerAuthresponse);
-                }else{
+                }else if(registerAuthresponse.message().equals("Error: already taken")){
                     res.status(403);
+                    return new Gson().toJson(registerAuthresponse);
+                }else{
+                    res.status(500);
                     return new Gson().toJson(registerAuthresponse);
                 }
 
@@ -60,8 +68,11 @@ public class Server {
         if(LoginAuthresponse.message() == null){
             res.status(200);
             return new Gson().toJson(LoginAuthresponse);
-        }else{
+        }else if(LoginAuthresponse.message().equals("Error: unauthorized")){
             res.status(401);
+            return new Gson().toJson(LoginAuthresponse);
+        }else{
+            res.status(500);
             return new Gson().toJson(LoginAuthresponse);
         }
     }
@@ -72,8 +83,11 @@ public class Server {
         if(logoutResponce.message() == null){
             res.status(200);
             return new Gson().toJson(logoutResponce);
-        }else{
+        }else if(logoutResponce.message().equals("Error: unauthorized")){
             res.status(401);
+            return new Gson().toJson(logoutResponce);
+        }else{
+            res.status(500);
             return new Gson().toJson(logoutResponce);
         }
     }

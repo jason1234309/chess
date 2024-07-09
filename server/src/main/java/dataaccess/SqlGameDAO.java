@@ -56,10 +56,23 @@ public class SqlGameDAO implements GameDAO{
 
     @Override
     public int createGame(String gameName) throws DataAccessException {
+        try (var conn = DatabaseManager.getConnection()) {
+            String queryStatement = "SELECT * FROM game WHERE gameName=?";
+            try (var ps = conn.prepareStatement(queryStatement)) {
+                ps.setString(1,gameName);
+                try (var rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        throw new DataAccessException("Error: unauthorized");
+                    }
+                }
+            }
+        } catch (DataAccessException | SQLException ex) {
+            throw new DataAccessException(String.format("Unable to read data: %s", ex.getMessage()));
+        }
         ChessGame chessGameObj = new ChessGame();
-        var statement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGameJson) VALUES (?,?,?,?)";
+        var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGameJson) VALUES (?,?,?,?)";
         try(var conn = DatabaseManager.getConnection()){
-            try(var ps = conn.prepareStatement(statement)){
+            try(var ps = conn.prepareStatement(insertStatement)){
                 ps.setString(1, gameName);
                 ps.setString(2, null);
                 ps.setString(3, null);
@@ -69,7 +82,7 @@ public class SqlGameDAO implements GameDAO{
         }catch(DataAccessException | SQLException ex){
             throw new DataAccessException(String.format("Unable to create game: %s", ex.getMessage()));
         }
-
+            // query for newly make game id
         return -1;
     }
 
@@ -98,7 +111,7 @@ public class SqlGameDAO implements GameDAO{
     }
 
     @Override
-    public Collection<GameData> listGames() {
+    public Collection<GameData> listGames() throws DataAccessException{
         Collection<GameData> gameList = new ArrayList<>();
         try (var conn = DatabaseManager.getConnection()) {
             String statement = "SELECT * FROM game";
