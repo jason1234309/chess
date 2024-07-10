@@ -15,24 +15,26 @@ import java.util.Map;
 public class SqlGameDAO implements GameDAO{
     public SqlGameDAO() throws DataAccessException{
         DatabaseManager.createDatabase();
-        final String[] createTableStatements = {
-                """
-            CREATE TABLE IF NOT EXISTS  game (
-            `id` int not Null AUTO_INCREMENT,
-            `gameName` varchar(256) NOT NULL,
-            `whiteUserName` varchar(256) NOT NULL,
-            `blackUserName` varchar(256) NOT NULL,
-            `chessGame` varchar(256) not NULL,                
-            PRIMARY KEY (`id`)
-            )
-            """
-        };
+        final String dropTableStatement = "DROP TABLE IF EXISTS game";
         try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createTableStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
+                try (var preparedStatement = conn.prepareStatement(dropTableStatement)) {
                     preparedStatement.executeUpdate();
                 }
-            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+
+        final String createTableStatements = "CREATE TABLE IF NOT EXISTS  game (" +
+                "`id` int not Null AUTO_INCREMENT," +
+                "`gameName` varchar(256) NOT NULL," +
+                "`whiteUserName` varchar(256) NULL," +
+                "`blackUserName` varchar(256) NULL," +
+                "`chessGame` varchar(4096) not NULL, " +
+                "PRIMARY KEY (`id`)) ";
+        try (var conn = DatabaseManager.getConnection()) {
+                try (var preparedStatement = conn.prepareStatement(createTableStatements)) {
+                    preparedStatement.executeUpdate();
+                }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
         }
@@ -71,10 +73,14 @@ public class SqlGameDAO implements GameDAO{
                 }
             }
         } catch (DataAccessException | SQLException ex) {
-            throw new DataAccessException(String.format("Unable to read data: %s", ex.getMessage()));
+            if(ex.getMessage().equals("Error: unauthorized")){
+                throw new DataAccessException("Error: unauthorized");
+            }else{
+                throw new DataAccessException(String.format("Unable to read data: %s", ex.getMessage()));
+            }
         }
         ChessGame chessGameObj = new ChessGame();
-        var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGameJson) VALUES (?,?,?,?)";
+        var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGame) VALUES (?,?,?,?)";
         try(var conn = DatabaseManager.getConnection()){
             try(var ps = conn.prepareStatement(insertStatement, Statement.RETURN_GENERATED_KEYS)){
                 ps.setString(1, gameName);

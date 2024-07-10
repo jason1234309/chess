@@ -13,6 +13,7 @@ public class UserServiceTests {
     UserData player1Data;
     UserData player2Data;
     UserData player3Data;
+    ResponseAuth badRequestAuthError;
     ResponseAuth alreadyTakenAuthError;
     ResponseAuth unauthorizedAuthError;
     ErrorResponce unauthorizedResError;
@@ -23,6 +24,7 @@ public class UserServiceTests {
         player1Data = new UserData("player1_username", "player1_password", "player1_email");
         player2Data = new UserData("player2_username", "player2_password", "player2_email");
         player3Data = new UserData("player3_username", "player3_password", "player3_email");
+        badRequestAuthError = new ResponseAuth(null, null, "Error: bad request");
         alreadyTakenAuthError = new ResponseAuth(null, null, "Error: already taken");
         unauthorizedAuthError = new ResponseAuth(null, null, "Error: unauthorized");
         unauthorizedResError = new ErrorResponce("Error: unauthorized");
@@ -70,12 +72,21 @@ public class UserServiceTests {
         Assertions.assertEquals(dubplicateRegistrationAuth, alreadyTakenAuthError);
     }
     @Test
+    @DisplayName("bad register request")
+    public void RegisterBadRequest(){
+        UserData badUser = new UserData("badperson", null, "fake.atcom");
+        ResponseAuth badUserAuth = testServiceObj.register(badUser);
+        Assertions.assertEquals(badRequestAuthError, badUserAuth);
+    }
+    @Test
     @DisplayName("reg/logout/login player 1")
     public void LoginPlayer1(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+        Assertions.assertNull(player1RegisteredAuth.message());
         testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         ResponseAuth player1LoginAuth = testServiceObj.login(player1Data);
         testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        Assertions.assertNull(player1LoginAuth.message());
     }
     @Test
     @DisplayName("login unknown player")
@@ -114,6 +125,17 @@ public class UserServiceTests {
         Assertions.assertEquals(mixedRegisteredAuth, unauthorizedAuthError);
 
 
+    }
+    @Test
+    @DisplayName("bad login request")
+    public void LoginBadRequest(){
+        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
+        UserData noPasswordUser = new UserData(player1Data.getUsername(), null, null);
+        UserData noUsernameUser = new UserData(null, player1Data.getPassword(), null);
+        ResponseAuth noPasswordAuth = testServiceObj.login(noPasswordUser);
+        ResponseAuth noUsernameAuth = testServiceObj.login(noUsernameUser);
+        Assertions.assertEquals(unauthorizedAuthError, noPasswordAuth);
+        Assertions.assertEquals(unauthorizedAuthError, noUsernameAuth);
     }
     @Test
     @DisplayName("Login_LogoutMultiplePlayers")

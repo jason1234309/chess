@@ -10,6 +10,14 @@ import static java.sql.Statement.RETURN_GENERATED_KEYS;
 public class SqlUserDAO implements UserDAO{
     public SqlUserDAO()throws DataAccessException{
         DatabaseManager.createDatabase();
+        final String dropTableStatement = "DROP TABLE IF EXISTS user";
+        try (var conn = DatabaseManager.getConnection()) {
+            try (var preparedStatement = conn.prepareStatement(dropTableStatement)) {
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
         final String[] createTableStatements = {
                 """
             CREATE TABLE IF NOT EXISTS  user (
