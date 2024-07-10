@@ -7,6 +7,7 @@ import model.AuthData;
 import model.GameData;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -20,7 +21,8 @@ public class SqlGameDAO implements GameDAO{
             `id` int not Null AUTO_INCREMENT,
             `gameName` varchar(256) NOT NULL,
             `whiteUserName` varchar(256) NOT NULL,
-            `blackUserName` varchar(256) NOT NULL,                
+            `blackUserName` varchar(256) NOT NULL,
+            `chessGame` varchar(256) not NULL,                
             PRIMARY KEY (`id`)
             )
             """
@@ -47,11 +49,13 @@ public class SqlGameDAO implements GameDAO{
         }
     }
 
-    public String gameToJson(ChessGame currentGame){
-//        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().registerTypeAdapter(ChessGame.class,new typeAdapter()).create();
-//        String json = gson.toJson(currentGame);
-
-        return "placeholder";
+    public String gameToJson(ChessGame currentGame){   // may not work
+        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        return gson.toJson(currentGame);
+    }
+    public ChessGame jsonToGame(String json){    // may not work
+        Gson serializer = new Gson();
+        return serializer.fromJson(json, ChessGame.class);
     }
 
     @Override
@@ -72,12 +76,16 @@ public class SqlGameDAO implements GameDAO{
         ChessGame chessGameObj = new ChessGame();
         var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGameJson) VALUES (?,?,?,?)";
         try(var conn = DatabaseManager.getConnection()){
-            try(var ps = conn.prepareStatement(insertStatement)){
+            try(var ps = conn.prepareStatement(insertStatement, Statement.RETURN_GENERATED_KEYS)){
                 ps.setString(1, gameName);
                 ps.setString(2, null);
                 ps.setString(3, null);
                 ps.setString(4, gameToJson(chessGameObj));  // not implemented
                 ps.executeUpdate();
+                var rs = ps.getGeneratedKeys();
+                if(rs.next()){
+                    return rs.getInt(1);
+                }
             }
         }catch(DataAccessException | SQLException ex){
             throw new DataAccessException(String.format("Unable to create game: %s", ex.getMessage()));
@@ -98,7 +106,7 @@ public class SqlGameDAO implements GameDAO{
                         String returnedGameName = rs.getString("gameName");
                         String returnedWhiteUserName = rs.getString("whiteUserName");
                         String returnedBlackUserName = rs.getString("blackUserName");
-                        ChessGame returnedChessGame = new ChessGame(); // not implmented
+                        ChessGame returnedChessGame = jsonToGame(rs.getString("chessGame")); // may not work
                         return new GameData(returnedGameId, returnedGameName,
                                 returnedWhiteUserName, returnedBlackUserName, returnedChessGame);
                     }
@@ -122,7 +130,7 @@ public class SqlGameDAO implements GameDAO{
                         String returnedGameName = rs.getString("gameName");
                         String returnedWhiteUserName = rs.getString("whiteUserName");
                         String returnedBlackUserName = rs.getString("blackUserName");
-                        ChessGame returnedChessGame = new ChessGame(); // not implmented
+                        ChessGame returnedChessGame = jsonToGame(rs.getString("chessGame")); // may not work
                         gameList.add(new GameData(returnedGameId, returnedGameName,
                                 returnedWhiteUserName, returnedBlackUserName, returnedChessGame));
                     }
@@ -136,6 +144,23 @@ public class SqlGameDAO implements GameDAO{
 
     @Override
     public void updateGame(Integer gameID, GameData updatedGameObject) throws DataAccessException {
-
+        boolean foundGame = false;
+        GameData desiredGame = this.getGame(gameID);
+        if(desiredGame == null){
+            throw new DataAccessException("Error: unauthorized" );
+        }
+        var updateStatement = "UPDATE game SET gameName=?, whiteUserName=?, blackUserName=?, chessGame=? where id=?";  //
+        try(var conn = DatabaseManager.getConnection()){
+            try(var ps = conn.prepareStatement(updateStatement)){
+                ps.setString(1, updatedGameObject.getGameName());
+                ps.setString(2, updatedGameObject.getWhiteUsername());
+                ps.setString(3, updatedGameObject.getBlackUsername());
+                ps.setString(4, gameToJson(updatedGameObject.getChessGame()));  // not implemented
+                ps.setInt(5, gameID);
+                ps.executeUpdate();
+            }
+        }catch(DataAccessException | SQLException ex){
+            throw new DataAccessException(String.format("Unable to update game: %s", ex.getMessage()));
+        }
     }
 }
