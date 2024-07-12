@@ -11,6 +11,7 @@ import java.util.Collection;
 
 public class SqlGameDAO implements GameDAO{
     public SqlGameDAO() throws DataAccessException{
+        // calls the database creation method and makes the sql create table statement for the game table
         DatabaseManager.createDatabase();
         final String createTableStatement = "CREATE TABLE IF NOT EXISTS  game (" +
                 "`id` int not Null AUTO_INCREMENT," +
@@ -19,6 +20,7 @@ public class SqlGameDAO implements GameDAO{
                 "`blackUserName` varchar(256) NULL," +
                 "`chessGame` varchar(4096) not NULL, " +
                 "PRIMARY KEY (`id`)) ";
+        // creates a connection to the database and creates the game table if it doesn't exist
         try (var conn = DatabaseManager.getConnection()) {
                 try (var preparedStatement = conn.prepareStatement(createTableStatement)) {
                     preparedStatement.executeUpdate();
@@ -29,6 +31,7 @@ public class SqlGameDAO implements GameDAO{
     }
     @Override
     public void clearGameDataBase() throws DataAccessException{
+        // connects to the database and clears all data from the game table
         var statement = "DELETE from game";
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement(statement)){
@@ -47,17 +50,21 @@ public class SqlGameDAO implements GameDAO{
         }
     }
 
-    public String gameToJson(ChessGame currentGame){   // may not work
+    public String gameToJson(ChessGame currentGame){
+        // converts a chessGame object to a json string
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         return gson.toJson(currentGame);
     }
-    public ChessGame jsonToGame(String json){    // may not work
+    public ChessGame jsonToGame(String json){
+        // converts a json string into a chessGame object
         Gson serializer = new Gson();
         return serializer.fromJson(json, ChessGame.class);
     }
 
     @Override
     public int createGame(String gameName) throws DataAccessException {
+        // connects to the database and queries for the game name given
+        // if the game name is found in the game table the function throws a DataAccessException
         try (var conn = DatabaseManager.getConnection()) {
             String queryStatement = "SELECT * FROM game WHERE gameName=?";
             try (var preparedStatement = conn.prepareStatement(queryStatement)) {
@@ -75,6 +82,8 @@ public class SqlGameDAO implements GameDAO{
                 throw new DataAccessException(String.format("Unable to read data: %s", ex.getMessage()));
             }
         }
+        // connects to the database and inserts a new game into the game table
+        // and returns auto generated game id
         ChessGame chessGameObj = new ChessGame();
         var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGame) VALUES (?,?,?,?)";
         try(var conn = DatabaseManager.getConnection()){
@@ -82,7 +91,7 @@ public class SqlGameDAO implements GameDAO{
                 preparedStatement.setString(1, gameName);
                 preparedStatement.setString(2, null);
                 preparedStatement.setString(3, null);
-                preparedStatement.setString(4, gameToJson(chessGameObj));  // not implemented
+                preparedStatement.setString(4, gameToJson(chessGameObj));
                 preparedStatement.executeUpdate();
                 var resultSet = preparedStatement.getGeneratedKeys();
                 if(resultSet.next()){
@@ -98,6 +107,7 @@ public class SqlGameDAO implements GameDAO{
 
     @Override
     public GameData getGame(Integer gameID) throws DataAccessException {
+        // connects to the database and queries the game table for a specific game
         try (var conn = DatabaseManager.getConnection()) {
             String queryStatement = "SELECT * FROM game WHERE id=?";
             try (var preparedStatement = conn.prepareStatement(queryStatement)) {
@@ -122,6 +132,8 @@ public class SqlGameDAO implements GameDAO{
 
     @Override
     public Collection<GameData> listGames() throws DataAccessException{
+        // connects to the database and looks for all games in the game table
+        // returns a collection of gameData objects found in the game table
         Collection<GameData> gameList = new ArrayList<>();
         try (var conn = DatabaseManager.getConnection()) {
             String queryStatement = "SELECT * FROM game";
@@ -146,10 +158,14 @@ public class SqlGameDAO implements GameDAO{
 
     @Override
     public void updateGame(Integer gameID, GameData updatedGameObject) throws DataAccessException {
+        // connects to the database and queries the game table for a specific game
+        // if game is found in the game table then the function continues
         GameData desiredGame = this.getGame(gameID);
         if(desiredGame == null){
             throw new DataAccessException("Error: unauthorized" );
         }
+        // connects to the database and updates the values in the game row queried above
+        // with the values provided
         var updateStatement = "UPDATE game SET gameName=?, whiteUserName=?, blackUserName=?, chessGame=? where id=?";  //
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement(updateStatement)){

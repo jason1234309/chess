@@ -10,18 +10,17 @@ public class Server {
     AllServices databaseServiceObj = new AllServices();
     Gson serializer = new Gson();
 
+    // runs all spark functions needed to start and run the server
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
 
-        // Register your endpoints and handle exceptions here.
+        // the request handlers functions are registered here
         Spark.delete("/db", this::clearApplication);
-
         Spark.post("/user", this::register);
         Spark.post("/session", this::login);
         Spark.delete("/session", this::logout);
-
         Spark.get("/game", this::listGames);
         Spark.post("/game", this::createGame);
         Spark.put("/game", this::joinGame);
@@ -30,7 +29,8 @@ public class Server {
         return Spark.port();
     }
 
-    public Object clearApplication(Request req, Response res){   // THIS IS INCOMPLETE, NO ERROR RESPONSE
+    public Object clearApplication(Request req, Response res){
+        // handles clear requests and returns appropriate response
         ErrorResponce clearMessage = databaseServiceObj.clearDatabases();
         if(clearMessage.message() == null){
             res.status(200);
@@ -40,6 +40,7 @@ public class Server {
         return new Gson().toJson(clearMessage);
     }
     public Object register(Request req, Response res){
+        // handles register requests and returns appropriate response
             UserData newUser = serializer.fromJson(req.body(), UserData.class);
             ResponseAuth registerAuthresponse = databaseServiceObj.register(newUser);
             if(registerAuthresponse.message() == null){
@@ -60,6 +61,7 @@ public class Server {
             }
     }
     public Object login(Request req, Response res){
+        // handles login requests and returns appropriate response
         UserData newUser = serializer.fromJson(req.body(), UserData.class);
         ResponseAuth loginAuthresponse = databaseServiceObj.login(newUser);
         if(loginAuthresponse.message() == null){
@@ -74,6 +76,7 @@ public class Server {
         }
     }
     public Object logout(Request req, Response res){
+        // handles logout requests and returns appropriate response
         String reqAuthToken = req.headers("authorization");
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
         ErrorResponce logoutResponse = databaseServiceObj.logout(tempAuthObj);
@@ -89,6 +92,7 @@ public class Server {
         }
     }
     public Object listGames(Request req, Response res){
+        // handles list game requests and returns appropriate response
         String reqAuthToken = req.headers("authorization");
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
         GameListResponse gameListResponse = databaseServiceObj.listGames(tempAuthObj);
@@ -104,6 +108,7 @@ public class Server {
         }
     }
     public Object createGame(Request req, Response res){
+        // handles create game requests and returns appropriate response
         String reqAuthToken = req.headers("authorization");
         GameNameReq gameName = serializer.fromJson(req.body(), GameNameReq.class);
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
@@ -125,6 +130,7 @@ public class Server {
         }
     }
     public Object joinGame(Request req, Response res){
+        // handles join game requests and returns appropriate response
         String reqAuthToken = req.headers("authorization");
         JoinRequestBody reqBodyObj = serializer.fromJson(req.body(), JoinRequestBody.class);
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
@@ -153,7 +159,7 @@ public class Server {
             }
         }
     }
-
+    // stops the server from running
     public void stop() {
         Spark.stop();
         Spark.awaitStop();

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 public class SqlUserDAO implements UserDAO{
     public SqlUserDAO()throws DataAccessException{
+        // calls the database creation method and makes the sql create table statement for the user table
         DatabaseManager.createDatabase();
         final String[] createTableStatements = {
                 """
@@ -16,6 +17,7 @@ public class SqlUserDAO implements UserDAO{
             )
             """
         };
+        // creates a connection to the database and creates the user table if it doesn't exist
         try (var conn = DatabaseManager.getConnection()) {
             for (var statement : createTableStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
@@ -28,6 +30,7 @@ public class SqlUserDAO implements UserDAO{
     }
     @Override
     public void clearUserDataBase() throws DataAccessException {
+        // connects to the database and clears all data from the user table
         var clearDataBaseStatement = "DELETE from user";
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement(clearDataBaseStatement)){
@@ -40,6 +43,7 @@ public class SqlUserDAO implements UserDAO{
 
     @Override
     public void createUser(String username, String password, String email) throws DataAccessException {
+        // connects to the database and inserts a new user into the user table
         var insertStatement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement(insertStatement)){
@@ -59,6 +63,7 @@ public class SqlUserDAO implements UserDAO{
 
     @Override
     public UserData getUser(String username) throws DataAccessException {
+        // connects to the database and queries the user table for a specific user
         try (var conn = DatabaseManager.getConnection()) {
             String queryStatement = "SELECT * FROM user WHERE username=?";
             try (var preparedStatement = conn.prepareStatement(queryStatement)) {
