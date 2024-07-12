@@ -34,13 +34,12 @@ public class Server {
 
     public Object ClearApplication(Request req, Response res){   // THIS IS INCOMPLETE, NO ERROR RESPONSE
         ErrorResponce clearMessage = databaseServiceObj.clearDatabases();
-        if(clearMessage == null){
+        if(clearMessage.message() == null){
             res.status(200);
-            return new Gson().toJson(clearMessage);
         }else{
             res.status(500);
-            return new Gson().toJson(clearMessage);
         }
+        return new Gson().toJson(clearMessage);
     }
     public Object Register(Request req, Response res){
             UserData newUser = serializer.fromJson(req.body(), UserData.class);
@@ -110,20 +109,20 @@ public class Server {
         String reqAuthToken = req.headers("authorization");
         GameNameReq gameName = serializer.fromJson(req.body(), GameNameReq.class);
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
-        GameCreationResponse createGameResponce = databaseServiceObj.CreateGame(tempAuthObj, gameName.gameName());
-        if(createGameResponce.message() == null){
+        GameCreationResponse createGameResponse = databaseServiceObj.CreateGame(tempAuthObj, gameName.gameName());
+        if(createGameResponse.message() == null){
             res.status(200);
-            return new Gson().toJson(createGameResponce);
+            return new Gson().toJson(createGameResponse);
         }else{
-            if(createGameResponce.message().equals("Error: bad request")){
+            if(createGameResponse.message().equals("Error: bad request")){
                 res.status(400);
-                return new Gson().toJson(createGameResponce);
-            }else if(createGameResponce.message().equals("Error: unauthorized")){
+                return new Gson().toJson(createGameResponse);
+            }else if(createGameResponse.message().equals("Error: unauthorized")){
                 res.status(401);
-                return new Gson().toJson(createGameResponce);
+                return new Gson().toJson(createGameResponse);
             }else{
                 res.status(500);
-                return new Gson().toJson(createGameResponce);
+                return new Gson().toJson(createGameResponse);
             }
         }
     }
@@ -131,23 +130,28 @@ public class Server {
         String reqAuthToken = req.headers("authorization");
         JoinRequestBody reqBodyObj = serializer.fromJson(req.body(), JoinRequestBody.class);
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
-        ErrorResponce joinGameResponce = databaseServiceObj.JoinGame(tempAuthObj, reqBodyObj.playerColor(), reqBodyObj.gameID());
-        if(joinGameResponce.message() == null){
+        ErrorResponce joinGameResponse = databaseServiceObj.JoinGame(tempAuthObj, reqBodyObj.playerColor(), reqBodyObj.gameID());
+        if(joinGameResponse.message() == null){
             res.status(200);
-            return new Gson().toJson(joinGameResponce);
+            return new Gson().toJson(joinGameResponse);
         }else{
-            if(joinGameResponce.message().equals("Error: bad request")) {
-                res.status(400);
-                return new Gson().toJson(joinGameResponce);
-            }else if(joinGameResponce.message().equals("Error: unauthorized")){
-                res.status(401);
-                return new Gson().toJson(joinGameResponce);
-            }else if(joinGameResponce.message().equals("Error: already taken")){
-                res.status(403);
-                return new Gson().toJson(joinGameResponce);
-            }else{
-                res.status(500);
-                return new Gson().toJson(joinGameResponce);
+            switch (joinGameResponse.message()) {
+                case "Error: bad request" -> {
+                    res.status(400);
+                    return new Gson().toJson(joinGameResponse);
+                }
+                case "Error: unauthorized" -> {
+                    res.status(401);
+                    return new Gson().toJson(joinGameResponse);
+                }
+                case "Error: already taken" -> {
+                    res.status(403);
+                    return new Gson().toJson(joinGameResponse);
+                }
+                default -> {
+                    res.status(500);
+                    return new Gson().toJson(joinGameResponse);
+                }
             }
         }
     }

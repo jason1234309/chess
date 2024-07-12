@@ -40,6 +40,14 @@ public class SqlGameDAO implements GameDAO{
         }catch(DataAccessException | SQLException ex){
             throw new DataAccessException(String.format("Unable to clear data: %s", ex.getMessage()));
         }
+        var resetAutoVarsStatement = "ALTER TABLE game AUTO_INCREMENT = 1";
+        try(var conn = DatabaseManager.getConnection()){
+            try(var ps = conn.prepareStatement(resetAutoVarsStatement)){
+                ps.executeUpdate();
+            }
+        }catch(DataAccessException | SQLException ex){
+            throw new DataAccessException(String.format("Unable to resent auto increment vars data: %s", ex.getMessage()));
+        }
     }
 
     public String gameToJson(ChessGame currentGame){   // may not work
