@@ -79,16 +79,16 @@ public class Server {
     public Object Logout(Request req, Response res){
         String reqAuthToken = req.headers("authorization");
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
-        ErrorResponce logoutResponce = databaseServiceObj.logout(tempAuthObj);
-        if(logoutResponce.message() == null){
+        ErrorResponce logoutResponse = databaseServiceObj.logout(tempAuthObj);
+        if(logoutResponse.message() == null){
             res.status(200);
-            return new Gson().toJson(logoutResponce);
-        }else if(logoutResponce.message().equals("Error: unauthorized")){
+            return new Gson().toJson(logoutResponse);
+        }else if(logoutResponse.message().equals("Error: unauthorized")){
             res.status(401);
-            return new Gson().toJson(logoutResponce);
+            return new Gson().toJson(logoutResponse);
         }else{
             res.status(500);
-            return new Gson().toJson(logoutResponce);
+            return new Gson().toJson(logoutResponse);
         }
     }
     public Object ListGames(Request req, Response res){
@@ -98,8 +98,11 @@ public class Server {
         if(gameListResponse.message() == null){
             res.status(200);
             return new Gson().toJson(gameListResponse);
-        }else{
+        }else if(gameListResponse.message().equals("Error: unauthorized")){
             res.status(401);
+            return new Gson().toJson(gameListResponse);
+        }else{
+            res.status(500);
             return new Gson().toJson(gameListResponse);
         }
     }
@@ -115,8 +118,11 @@ public class Server {
             if(createGameResponce.message().equals("Error: bad request")){
                 res.status(400);
                 return new Gson().toJson(createGameResponce);
-            }else{
+            }else if(createGameResponce.message().equals("Error: unauthorized")){
                 res.status(401);
+                return new Gson().toJson(createGameResponce);
+            }else{
+                res.status(500);
                 return new Gson().toJson(createGameResponce);
             }
         }
@@ -130,14 +136,17 @@ public class Server {
             res.status(200);
             return new Gson().toJson(joinGameResponce);
         }else{
-            if(joinGameResponce.message().equals("Error: unauthorized")){
+            if(joinGameResponce.message().equals("Error: bad request")) {
+                res.status(400);
+                return new Gson().toJson(joinGameResponce);
+            }else if(joinGameResponce.message().equals("Error: unauthorized")){
                 res.status(401);
                 return new Gson().toJson(joinGameResponce);
             }else if(joinGameResponce.message().equals("Error: already taken")){
                 res.status(403);
                 return new Gson().toJson(joinGameResponce);
             }else{
-                res.status(400);
+                res.status(500);
                 return new Gson().toJson(joinGameResponce);
             }
         }
