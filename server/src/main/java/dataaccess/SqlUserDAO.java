@@ -1,11 +1,7 @@
 package dataaccess;
-import com.google.gson.Gson;
+
 import model.UserData;
-
-import javax.xml.crypto.Data;
 import java.sql.SQLException;
-
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
 
 public class SqlUserDAO implements UserDAO{
     public SqlUserDAO()throws DataAccessException{

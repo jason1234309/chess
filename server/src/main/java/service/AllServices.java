@@ -1,10 +1,10 @@
 package service;
+
 import dataaccess.*;
 import model.*;
 import responseRequest.*;
 import chess.ChessGame;
 import org.mindrot.jbcrypt.BCrypt;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;

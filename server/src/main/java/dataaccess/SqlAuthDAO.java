@@ -1,8 +1,6 @@
 package dataaccess;
 
 import model.AuthData;
-import model.UserData;
-
 import java.sql.SQLException;
 
 public class SqlAuthDAO implements AuthDAO{
@@ -12,7 +10,7 @@ public class SqlAuthDAO implements AuthDAO{
                 """
             CREATE TABLE IF NOT EXISTS  auth (
             `authToken` varchar(256) NOT NULL,
-            `username` varchar(256) NOT NULL,              
+            `username` varchar(256) NOT NULL,
             PRIMARY KEY (`authToken`)
             )
             """

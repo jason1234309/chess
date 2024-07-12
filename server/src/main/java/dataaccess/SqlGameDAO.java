@@ -3,14 +3,11 @@ package dataaccess;
 import chess.ChessGame;
 import com.google.gson.GsonBuilder;
 import com.google.gson.Gson;
-import model.AuthData;
 import model.GameData;
-
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 public class SqlGameDAO implements GameDAO{
     public SqlGameDAO() throws DataAccessException{
