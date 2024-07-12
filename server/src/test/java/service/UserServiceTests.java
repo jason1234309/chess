@@ -1,7 +1,7 @@
 package service;
 
-import ResponseRequest.ErrorResponce;
-import ResponseRequest.ResponseAuth;
+import responseRequest.ErrorResponce;
+import responseRequest.ResponseAuth;
 import model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,7 +103,7 @@ public class UserServiceTests {
         ErrorResponce player1LogoutReg = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         ErrorResponce player2LogoutReg = testServiceObj.logout(new AuthData(player2RegisteredAuth.username(), player2RegisteredAuth.authToken()));
         ResponseAuth player1Login = testServiceObj.login(player1Data);
-        ResponseAuth fakeLogin = new ResponseAuth(player2Data.getUsername(), new String("notRealAuth"), null);
+        ResponseAuth fakeLogin = new ResponseAuth(player2Data.getUsername(),"notRealAuth", null);
         ErrorResponce fakeLogout = testServiceObj.logout(new AuthData(fakeLogin.username(), fakeLogin.authToken()));
         Assertions.assertEquals(fakeLogout, unauthorizedResError);
     }

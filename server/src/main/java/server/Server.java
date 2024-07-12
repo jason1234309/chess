@@ -1,8 +1,6 @@
 package server;
 
-import ResponseRequest.*;
-import chess.ChessGame;
-import dataaccess.DataAccessException;
+import responseRequest.*;
 import model.*;
 import spark.*;
 import com.google.gson.Gson;
@@ -18,21 +16,21 @@ public class Server {
         Spark.staticFiles.location("web");
 
         // Register your endpoints and handle exceptions here.
-        Spark.delete("/db", this::ClearApplication);
+        Spark.delete("/db", this::clearApplication);
 
-        Spark.post("/user", this::Register);
-        Spark.post("/session", this::Login);
-        Spark.delete("/session", this::Logout);
+        Spark.post("/user", this::register);
+        Spark.post("/session", this::login);
+        Spark.delete("/session", this::logout);
 
-        Spark.get("/game", this::ListGames);
-        Spark.post("/game", this::CreateGame);
-        Spark.put("/game", this::JoinGame);
+        Spark.get("/game", this::listGames);
+        Spark.post("/game", this::createGame);
+        Spark.put("/game", this::joinGame);
 
         Spark.awaitInitialization();
         return Spark.port();
     }
 
-    public Object ClearApplication(Request req, Response res){   // THIS IS INCOMPLETE, NO ERROR RESPONSE
+    public Object clearApplication(Request req, Response res){   // THIS IS INCOMPLETE, NO ERROR RESPONSE
         ErrorResponce clearMessage = databaseServiceObj.clearDatabases();
         if(clearMessage.message() == null){
             res.status(200);
@@ -41,7 +39,7 @@ public class Server {
         }
         return new Gson().toJson(clearMessage);
     }
-    public Object Register(Request req, Response res){
+    public Object register(Request req, Response res){
             UserData newUser = serializer.fromJson(req.body(), UserData.class);
             ResponseAuth registerAuthresponse = databaseServiceObj.register(newUser);
             if(registerAuthresponse.message() == null){
@@ -61,7 +59,7 @@ public class Server {
 
             }
     }
-    public Object Login(Request req, Response res){
+    public Object login(Request req, Response res){
         UserData newUser = serializer.fromJson(req.body(), UserData.class);
         ResponseAuth LoginAuthresponse = databaseServiceObj.login(newUser);
         if(LoginAuthresponse.message() == null){
@@ -75,7 +73,7 @@ public class Server {
             return new Gson().toJson(LoginAuthresponse);
         }
     }
-    public Object Logout(Request req, Response res){
+    public Object logout(Request req, Response res){
         String reqAuthToken = req.headers("authorization");
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
         ErrorResponce logoutResponse = databaseServiceObj.logout(tempAuthObj);
@@ -90,10 +88,10 @@ public class Server {
             return new Gson().toJson(logoutResponse);
         }
     }
-    public Object ListGames(Request req, Response res){
+    public Object listGames(Request req, Response res){
         String reqAuthToken = req.headers("authorization");
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
-        GameListResponse gameListResponse = databaseServiceObj.ListGames(tempAuthObj);
+        GameListResponse gameListResponse = databaseServiceObj.listGames(tempAuthObj);
         if(gameListResponse.message() == null){
             res.status(200);
             return new Gson().toJson(gameListResponse);
@@ -105,11 +103,11 @@ public class Server {
             return new Gson().toJson(gameListResponse);
         }
     }
-    public Object CreateGame(Request req, Response res){
+    public Object createGame(Request req, Response res){
         String reqAuthToken = req.headers("authorization");
         GameNameReq gameName = serializer.fromJson(req.body(), GameNameReq.class);
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
-        GameCreationResponse createGameResponse = databaseServiceObj.CreateGame(tempAuthObj, gameName.gameName());
+        GameCreationResponse createGameResponse = databaseServiceObj.createGame(tempAuthObj, gameName.gameName());
         if(createGameResponse.message() == null){
             res.status(200);
             return new Gson().toJson(createGameResponse);
@@ -126,11 +124,11 @@ public class Server {
             }
         }
     }
-    public Object JoinGame(Request req, Response res){
+    public Object joinGame(Request req, Response res){
         String reqAuthToken = req.headers("authorization");
         JoinRequestBody reqBodyObj = serializer.fromJson(req.body(), JoinRequestBody.class);
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
-        ErrorResponce joinGameResponse = databaseServiceObj.JoinGame(tempAuthObj, reqBodyObj.playerColor(), reqBodyObj.gameID());
+        ErrorResponce joinGameResponse = databaseServiceObj.joinGame(tempAuthObj, reqBodyObj.playerColor(), reqBodyObj.gameID());
         if(joinGameResponse.message() == null){
             res.status(200);
             return new Gson().toJson(joinGameResponse);

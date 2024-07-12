@@ -1,14 +1,12 @@
 package service;
 import dataaccess.*;
 import model.*;
-import ResponseRequest.*;
+import responseRequest.*;
 import chess.ChessGame;
 import org.mindrot.jbcrypt.BCrypt;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.UUID;
 
 public class AllServices {
@@ -95,7 +93,7 @@ public class AllServices {
         }
     }
 
-    public GameCreationResponse CreateGame(AuthData userAuth, String gameName) {
+    public GameCreationResponse createGame(AuthData userAuth, String gameName) {
         if(gameName == null){
             return new GameCreationResponse(null, "Error: bad request");
         }
@@ -115,7 +113,7 @@ public class AllServices {
         }
 
     }
-    public GameListResponse ListGames(AuthData userAuth){
+    public GameListResponse listGames(AuthData userAuth){
         try{
             AuthData returnedUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
             if(returnedUserAuth == null){
@@ -124,9 +122,8 @@ public class AllServices {
         }catch(DataAccessException e){
             return new GameListResponse(null, e.getMessage());
         }
-        Collection<GameData> totalGameList = new ArrayList<>();
         try{
-            totalGameList.addAll(gameDAOObj.listGames());
+            Collection<GameData> totalGameList = new ArrayList<>(gameDAOObj.listGames());
             for(GameData currentGame:totalGameList){
                 currentGame.setChessGame(null);
             }
@@ -135,7 +132,7 @@ public class AllServices {
             return new GameListResponse(null, ex.getMessage());
         }
     }
-    public ErrorResponce JoinGame(AuthData userAuth, ChessGame.TeamColor playerColor, Integer gameId) {
+    public ErrorResponce joinGame(AuthData userAuth, ChessGame.TeamColor playerColor, Integer gameId) {
         if(playerColor == null || gameId == null){
             return new ErrorResponce("Error: bad request");
         }
