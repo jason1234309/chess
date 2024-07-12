@@ -32,7 +32,7 @@ public class UserServiceTests {
 
     @Test
     @DisplayName("register player 1")
-    public void RegisterPlayer1(){
+    public void registerPlayer1(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         ResponseAuth loginAuth = testServiceObj.login(player1Data);
         Assertions.assertNull(registerAuth.message());
@@ -46,7 +46,7 @@ public class UserServiceTests {
 
     @Test
     @DisplayName("register multiple players")
-    public void RegisterMultiplePlayers(){
+    public void registerMultiplePlayers(){
        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
        ResponseAuth player2RegisteredAuth = testServiceObj.register(player2Data);
        ResponseAuth player3RegisteredAuth = testServiceObj.register(player3Data);
@@ -65,7 +65,7 @@ public class UserServiceTests {
     }
     @Test
     @DisplayName("register same player twice")
-    public void RegisterSamePlayerTwice(){
+    public void registerSamePlayerTwice(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         ResponseAuth dubplicateRegistrationAuth = testServiceObj.register(player1Data);
         Assertions.assertNull(player1RegisteredAuth.message());
@@ -73,14 +73,14 @@ public class UserServiceTests {
     }
     @Test
     @DisplayName("bad register request")
-    public void RegisterBadRequest(){
+    public void registerBadRequest(){
         UserData badUser = new UserData("badperson", null, "fake.atcom");
         ResponseAuth badUserAuth = testServiceObj.register(badUser);
         Assertions.assertEquals(badRequestAuthError, badUserAuth);
     }
     @Test
     @DisplayName("reg/logout/login player 1")
-    public void LoginPlayer1(){
+    public void loginPlayer1(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         Assertions.assertNull(player1RegisteredAuth.message());
         testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
@@ -90,14 +90,14 @@ public class UserServiceTests {
     }
     @Test
     @DisplayName("login unknown player")
-    public void LoginUnknownPlayer(){
+    public void loginUnknownPlayer(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         ResponseAuth player2Login = testServiceObj.login(player2Data);
         Assertions.assertEquals(player2Login, unauthorizedAuthError);
     }
     @Test
     @DisplayName("login wrong player")
-    public void LoginWrongPlayer(){
+    public void loginWrongPlayer(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         ResponseAuth player2RegisteredAuth = testServiceObj.register(player2Data);
         ErrorResponce player1LogoutReg = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
@@ -109,7 +109,7 @@ public class UserServiceTests {
     }
     @Test
     @DisplayName("logout player twice")
-    public void LogoutPlayerTwice(){
+    public void logoutPlayerTwice(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         ErrorResponce firstLogoutRes = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         ErrorResponce secondLogoutRes = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
@@ -118,7 +118,7 @@ public class UserServiceTests {
     }
     @Test
     @DisplayName("login wrong password")
-    public void LoginWrongPassword(){
+    public void loginWrongPassword(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         UserData mixedUser = new UserData(player1Data.getUsername(), player2Data.getPassword(), player3Data.getEmail());
         ResponseAuth mixedRegisteredAuth = testServiceObj.login(mixedUser);
@@ -128,7 +128,7 @@ public class UserServiceTests {
     }
     @Test
     @DisplayName("bad login request")
-    public void LoginBadRequest(){
+    public void loginBadRequest(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         UserData noPasswordUser = new UserData(player1Data.getUsername(), null, null);
         UserData noUsernameUser = new UserData(null, player1Data.getPassword(), null);
@@ -138,8 +138,8 @@ public class UserServiceTests {
         Assertions.assertEquals(unauthorizedAuthError, noUsernameAuth);
     }
     @Test
-    @DisplayName("Login_LogoutMultiplePlayers")
-    public void Login_LogoutMultiplePlayers(){
+    @DisplayName("Login and LogoutMultiplePlayers")
+    public void loginLogoutMultiplePlayers(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         ResponseAuth player2RegisteredAuth = testServiceObj.register(player2Data);
         ResponseAuth player3RegisteredAuth = testServiceObj.register(player3Data);
@@ -157,8 +157,8 @@ public class UserServiceTests {
         Assertions.assertNull(player3LogoutAuth.message());
     }
     @Test
-    @DisplayName("Login_LogoutPlayer1ThreeTimes")
-    public void Login_LogoutPlayer1ThreeTimes(){
+    @DisplayName("Login and LogoutPlayer1ThreeTimes")
+    public void loginLogoutPlayer1ThreeTimes(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         ResponseAuth player1LoginAuth1 = testServiceObj.login(player1Data);

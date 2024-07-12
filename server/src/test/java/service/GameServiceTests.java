@@ -34,7 +34,7 @@ public class GameServiceTests {
 
     @Test
     @DisplayName("create game Twice")
-    public void CreateGameTwice(){
+    public void createGameTwice(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         GameCreationResponse duplicateError = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
@@ -44,7 +44,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("create game with invalid auth")
-    public void CreateGameInvalidAuth(){
+    public void createGameInvalidAuth(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         testServiceObj.logout(new AuthData(registerAuth.username(), registerAuth.authToken()));
         GameCreationResponse unauthorizedCreate = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
@@ -53,7 +53,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("create multiple games")
-    public void CreateMultipleGames(){
+    public void createMultipleGames(){
         ResponseAuth registerAuth1 = testServiceObj.register(player1Data);
         ResponseAuth registerAuth2 = testServiceObj.register(player2Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "firstGame");
@@ -75,7 +75,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("list 1 game")
-    public void List1Game(){
+    public void list1Game(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         GameListResponse gameList = testServiceObj.listGames(new AuthData(registerAuth.username(), registerAuth.authToken()));
@@ -84,7 +84,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("List multiple games")
-    public void ListMultipleGames(){
+    public void listMultipleGames(){
         ResponseAuth registerAuth1 = testServiceObj.register(player1Data);
         ResponseAuth registerAuth2 = testServiceObj.register(player2Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth1.username(), registerAuth1.authToken()), "firstGame");
@@ -100,7 +100,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("UnauthorizedListGame")
-    public void UnauthorizedListGame(){
+    public void unauthorizedListGame(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         AuthData fakeAuth = new AuthData("", "");
@@ -109,7 +109,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("white player joins")
-    public void WhitePlayerJoins(){
+    public void whitePlayerJoins(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         ErrorResponce whiteJoined = testServiceObj.joinGame(new AuthData(registerAuth.username(), registerAuth.authToken()), ChessGame.TeamColor.WHITE, game1ID.gameID());
@@ -119,7 +119,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("Black player joins")
-    public void BlackPlayerJoins(){
+    public void blackPlayerJoins(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         ErrorResponce blackJoined = testServiceObj.joinGame(new AuthData(registerAuth.username(), registerAuth.authToken()), ChessGame.TeamColor.BLACK, game1ID.gameID());
@@ -128,7 +128,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("both players joins")
-    public void BothPlayersJoins(){
+    public void bothPlayersJoins(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         ErrorResponce whiteJoined = testServiceObj.joinGame(new AuthData(registerAuth.username(), registerAuth.authToken()), ChessGame.TeamColor.WHITE, game1ID.gameID());
@@ -138,7 +138,7 @@ public class GameServiceTests {
     }
     @Test
     @DisplayName("white player joins full game")
-    public void WhitePlayerJoinsFullGame(){
+    public void whitePlayerJoinsFullGame(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         GameCreationResponse game1ID = testServiceObj.createGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         ErrorResponce whiteJoined = testServiceObj.joinGame(new AuthData(registerAuth.username(), registerAuth.authToken()), ChessGame.TeamColor.WHITE, game1ID.gameID());
