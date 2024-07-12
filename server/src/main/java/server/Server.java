@@ -61,16 +61,16 @@ public class Server {
     }
     public Object login(Request req, Response res){
         UserData newUser = serializer.fromJson(req.body(), UserData.class);
-        ResponseAuth LoginAuthresponse = databaseServiceObj.login(newUser);
-        if(LoginAuthresponse.message() == null){
+        ResponseAuth loginAuthresponse = databaseServiceObj.login(newUser);
+        if(loginAuthresponse.message() == null){
             res.status(200);
-            return new Gson().toJson(LoginAuthresponse);
-        }else if(LoginAuthresponse.message().equals("Error: unauthorized")){
+            return new Gson().toJson(loginAuthresponse);
+        }else if(loginAuthresponse.message().equals("Error: unauthorized")){
             res.status(401);
-            return new Gson().toJson(LoginAuthresponse);
+            return new Gson().toJson(loginAuthresponse);
         }else{
             res.status(500);
-            return new Gson().toJson(LoginAuthresponse);
+            return new Gson().toJson(loginAuthresponse);
         }
     }
     public Object logout(Request req, Response res){

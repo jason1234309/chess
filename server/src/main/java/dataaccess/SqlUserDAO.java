@@ -32,10 +32,10 @@ public class SqlUserDAO implements UserDAO{
     }
     @Override
     public void clearUserDataBase() throws DataAccessException {
-        var statement = "DELETE from user";
+        var clearDataBaseStatement = "DELETE from user";
         try(var conn = DatabaseManager.getConnection()){
-            try(var ps = conn.prepareStatement(statement)){
-                ps.executeUpdate();
+            try(var preparedStatement = conn.prepareStatement(clearDataBaseStatement)){
+                preparedStatement.executeUpdate();
             }
         }catch(DataAccessException | SQLException ex){
             throw new DataAccessException(String.format("Unable to clear data: %s", ex.getMessage()));
@@ -44,13 +44,13 @@ public class SqlUserDAO implements UserDAO{
 
     @Override
     public void createUser(String username, String password, String email) throws DataAccessException {
-        var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
+        var insertStatement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
         try(var conn = DatabaseManager.getConnection()){
-            try(var ps = conn.prepareStatement(statement)){
-                ps.setString(1, username);
-                ps.setString(2, password);
-                ps.setString(3, email);
-                ps.executeUpdate();
+            try(var preparedStatement = conn.prepareStatement(insertStatement)){
+                preparedStatement.setString(1, username);
+                preparedStatement.setString(2, password);
+                preparedStatement.setString(3, email);
+                preparedStatement.executeUpdate();
             }
         }catch(DataAccessException | SQLException ex){
             if(ex.getMessage().startsWith("Duplicate entry")){
@@ -64,14 +64,14 @@ public class SqlUserDAO implements UserDAO{
     @Override
     public UserData getUser(String username) throws DataAccessException {
         try (var conn = DatabaseManager.getConnection()) {
-            String statement = "SELECT * FROM user WHERE username=?";
-            try (var ps = conn.prepareStatement(statement)) {
-                ps.setString(1,username);
-                try (var rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        String returnedUserName = rs.getString("username");
-                        String returnedPassword = rs.getString("password");
-                        String returnedEmail = rs.getString("email");
+            String queryStatement = "SELECT * FROM user WHERE username=?";
+            try (var preparedStatement = conn.prepareStatement(queryStatement)) {
+                preparedStatement.setString(1,username);
+                try (var resultSet = preparedStatement.executeQuery()) {
+                    if (resultSet.next()) {
+                        String returnedUserName = resultSet.getString("username");
+                        String returnedPassword = resultSet.getString("password");
+                        String returnedEmail = resultSet.getString("email");
                         return new UserData(returnedUserName, returnedPassword, returnedEmail);
                     }
                 }

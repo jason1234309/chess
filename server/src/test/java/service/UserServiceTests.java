@@ -67,9 +67,9 @@ public class UserServiceTests {
     @DisplayName("register same player twice")
     public void registerSamePlayerTwice(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
-        ResponseAuth dubplicateRegistrationAuth = testServiceObj.register(player1Data);
+        ResponseAuth duplicateRegistrationAuth = testServiceObj.register(player1Data);
         Assertions.assertNull(player1RegisteredAuth.message());
-        Assertions.assertEquals(dubplicateRegistrationAuth, alreadyTakenAuthError);
+        Assertions.assertEquals(duplicateRegistrationAuth, alreadyTakenAuthError);
     }
     @Test
     @DisplayName("bad register request")
