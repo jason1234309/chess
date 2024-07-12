@@ -21,6 +21,7 @@ public class GameServiceTests {
     UserData player3Data;
     ErrorResponce unauthorizedError;
     ErrorResponce alreadyTakenError;
+    GameCreationResponse unauthorizedCreation;
     @BeforeEach
     public void setUp() {
         testServiceObj = new AllServices();
@@ -31,6 +32,7 @@ public class GameServiceTests {
         ChessGame testGame = new ChessGame();
         unauthorizedError = new ErrorResponce("Error: unauthorized");
         alreadyTakenError = new ErrorResponce("Error: already taken");
+        unauthorizedCreation = new GameCreationResponse(null, "Error: unauthorized");
 
     }
 
@@ -50,7 +52,7 @@ public class GameServiceTests {
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
         testServiceObj.logout(new AuthData(registerAuth.username(), registerAuth.authToken()));
         GameCreationResponse unauthorizedCreate = testServiceObj.CreateGame(new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
-        Assertions.assertEquals(unauthorizedCreate.message(), unauthorizedError.message());
+        Assertions.assertEquals(unauthorizedCreation, unauthorizedCreate);
 
     }
     @Test

@@ -15,15 +15,6 @@ import java.util.Map;
 public class SqlGameDAO implements GameDAO{
     public SqlGameDAO() throws DataAccessException{
         DatabaseManager.createDatabase();
-        final String dropTableStatement = "DROP TABLE IF EXISTS game";
-        try (var conn = DatabaseManager.getConnection()) {
-                try (var preparedStatement = conn.prepareStatement(dropTableStatement)) {
-                    preparedStatement.executeUpdate();
-                }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
-        }
-
         final String createTableStatements = "CREATE TABLE IF NOT EXISTS  game (" +
                 "`id` int not Null AUTO_INCREMENT," +
                 "`gameName` varchar(256) NOT NULL," +

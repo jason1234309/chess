@@ -50,7 +50,7 @@ public class AllServices {
         }
         try{
             String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
-            userDAOObj.createUser(user.getUsername(), hashedPassword, user.getPassword());
+            userDAOObj.createUser(user.getUsername(), hashedPassword, user.getEmail());
         }catch(DataAccessException e){
             return new ResponseAuth(null, null, e.getMessage());
         }
@@ -100,7 +100,10 @@ public class AllServices {
             return new GameCreationResponse(null, "Error: bad request");
         }
         try{
-            authDAOObj.getAuth(userAuth.getAuthToken());
+            AuthData returnedUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
+            if(returnedUserAuth == null){
+                throw new DataAccessException("Error: unauthorized");
+            }
         }catch(DataAccessException e){
             return new GameCreationResponse(null, e.getMessage());
         }
@@ -114,7 +117,10 @@ public class AllServices {
     }
     public GameListResponse ListGames(AuthData userAuth){
         try{
-            authDAOObj.getAuth(userAuth.getAuthToken());
+            AuthData returnedUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
+            if(returnedUserAuth == null){
+                throw new DataAccessException("Error: unauthorized");
+            }
         }catch(DataAccessException e){
             return new GameListResponse(null, e.getMessage());
         }
@@ -134,7 +140,10 @@ public class AllServices {
             return new ErrorResponce("Error: bad request");
         }
         try{
-            AuthData fullUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
+            AuthData returnedUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
+            if(returnedUserAuth == null){
+                throw new DataAccessException("Error: unauthorized");
+            }
         }catch(DataAccessException e){
             return new ErrorResponce(e.getMessage());
         }
