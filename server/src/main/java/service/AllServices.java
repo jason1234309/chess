@@ -92,13 +92,8 @@ public class AllServices {
         }
     }
     public ErrorResponce logout(AuthData userAuthToken){
-        // calls the get auth DAO method to verify the authToken is in the database
+        // deletes the authToken provided from the database
         try{
-           AuthData returnedAuth = authDAOObj.getAuth(userAuthToken.getAuthToken());
-           if(returnedAuth == null){
-               return new ErrorResponce("Error: unauthorized");
-           }
-           // deletes the authToken provided from the database
             authDAOObj.deleteAuth(userAuthToken.getAuthToken());
             return new ErrorResponce(null);
         }catch(DataAccessException e){

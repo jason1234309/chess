@@ -1,4 +1,5 @@
 package SqlDaoTests;
+
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.SqlAuthDAO;
@@ -41,17 +42,32 @@ public class SqlAuthDaoTests {
         Assertions.assertEquals(player1Auth, returnedAuthData1);
         authDAOObj.createAuth(player2Auth.getUsername(), player2Auth.getAuthToken());
         AuthData returnedAuthData2 = authDAOObj.getAuth(player2Auth.getAuthToken());
-        Assertions.assertEquals(player1Auth, returnedAuthData2);
+        Assertions.assertEquals(player2Auth, returnedAuthData2);
     }
-//
-@Test
-@DisplayName("create 2 auth")
-public void create2Auth() throws DataAccessException{
-    authDAOObj.createAuth(player1Auth.getUsername(), player1Auth.getAuthToken());
-    AuthData returnedAuthData1 = authDAOObj.getAuth(player1Auth.getAuthToken());
-    Assertions.assertEquals(player1Auth, returnedAuthData1);
-    authDAOObj.createAuth(player2Auth.getUsername(), player2Auth.getAuthToken());
-    AuthData returnedAuthData2 = authDAOObj.getAuth(player2Auth.getAuthToken());
-    Assertions.assertEquals(player1Auth, returnedAuthData2);
-}
+    //
+    @Test
+    @DisplayName("delete auth")
+    public void deleteAuth() throws DataAccessException{
+        authDAOObj.createAuth(player1Auth.getUsername(), player1Auth.getAuthToken());
+        AuthData returnedAuthData1 = authDAOObj.getAuth(player1Auth.getAuthToken());
+        Assertions.assertEquals(player1Auth, returnedAuthData1);
+        authDAOObj.deleteAuth(returnedAuthData1.getAuthToken());
+        Assertions.assertThrows(DataAccessException.class, ()-> authDAOObj.deleteAuth(returnedAuthData1.getAuthToken()));
+    }
+    @Test
+    @DisplayName("get invalid auth")
+    public void getInvalidAuth() throws DataAccessException{
+        authDAOObj.createAuth(player1Auth.getUsername(), player1Auth.getAuthToken());
+        AuthData returnedAuthData1 = authDAOObj.getAuth("invalid auth");
+        Assertions.assertNull(returnedAuthData1);
+
+    }
+    @Test
+    @DisplayName("delete invalid auth")
+    public void deleteInvalidAuth() throws DataAccessException{
+        authDAOObj.createAuth(player1Auth.getUsername(), player1Auth.getAuthToken());
+        AuthData returnedAuthData1 = authDAOObj.getAuth(player1Auth.getAuthToken());
+        Assertions.assertEquals(player1Auth, returnedAuthData1);
+        Assertions.assertThrows(DataAccessException.class, ()-> authDAOObj.deleteAuth("invalid auth"));
+    }
 }

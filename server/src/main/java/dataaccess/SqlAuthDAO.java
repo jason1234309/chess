@@ -79,6 +79,16 @@ public class SqlAuthDAO implements AuthDAO{
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
+        // connects to the database and verifies the provided authToken is in the auth table
+        try{
+            AuthData returnedDeleteAuth = this.getAuth(authToken);
+            if(returnedDeleteAuth == null){
+                throw new DataAccessException("Error: unauthorized");
+            }
+        }catch(DataAccessException ex){
+            throw new DataAccessException("Error: unauthorized");
+        }
+
         // connects to the database and deletes a specific auth from the auth table
         var deleteStatement = "Delete from auth where authToken=?";
         try(var conn = DatabaseManager.getConnection()){

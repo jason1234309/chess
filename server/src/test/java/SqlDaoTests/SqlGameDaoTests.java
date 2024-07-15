@@ -1,58 +1,163 @@
 package SqlDaoTests;
-import responserequest.ErrorResponce;
-import responserequest.ResponseAuth;
+
+import chess.ChessGame;
+import dataaccess.GameDAO;
+import dataaccess.DataAccessException;
+import dataaccess.SqlGameDAO;
 import model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import service.AllServices;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class SqlGameDaoTests {
+    SqlGameDaoTests(){
+        try{
+            gameDAOObj = new SqlGameDAO();
+            gameDAOObj.clearGameDataBase();
+        }catch(DataAccessException ex){
+            System.out.println("Could not create Auth DAO");
+        }
+    }
+    static GameDAO gameDAOObj;
+    UserData player1User;
+    UserData player2User;
+    UserData player3User;
     @BeforeEach
     public void setUp() {
-        testServiceObj = new AllServices();
-        testServiceObj.clearDatabases();
-        player1Data = new UserData("player1_username", "player1_password", "player1_email");
-        player2Data = new UserData("player2_username", "player2_password", "player2_email");
-        player3Data = new UserData("player3_username", "player3_password", "player3_email");
-        badRequestAuthError = new ResponseAuth(null, null, "Error: bad request");
-        alreadyTakenAuthError = new ResponseAuth(null, null, "Error: already taken");
-        unauthorizedAuthError = new ResponseAuth(null, null, "Error: unauthorized");
-        unauthorizedResError = new ErrorResponce("Error: unauthorized");
+        player1User = new UserData("player1_username", "player1 password", "player1_email");
+        player2User = new UserData("player2_username", "player2 password", "player2_email");
+        player3User = new UserData("player3_username", "player3 password", "player3_email");
     }
 
     @Test
-    @DisplayName("register player 1")
-    public void registerPlayer1(){
-        ResponseAuth registerAuth = testServiceObj.register(player1Data);
-        ResponseAuth loginAuth = testServiceObj.login(player1Data);
-        Assertions.assertNull(registerAuth.message());
-        Assertions.assertNull(loginAuth.message());
-        ErrorResponce logoutRegisterRes = testServiceObj.logout(new AuthData(registerAuth.username(), registerAuth.authToken()));
-        ErrorResponce logoutLoginRes = testServiceObj.logout(new AuthData(loginAuth.username(), loginAuth.authToken()));
-        Assertions.assertNull(logoutRegisterRes.message());
-        Assertions.assertNull(logoutLoginRes.message());
+    @DisplayName("create game")
+    public void createGame() throws DataAccessException{
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        GameData returnedGameData = gameDAOObj.getGame(firstGameId);
+        Assertions.assertEquals(firstGameId, returnedGameData.getGameID());
+        Assertions.assertEquals("firstGame", returnedGameData.getGameName());
+        Assertions.assertNull(returnedGameData.getBlackUsername());
+        Assertions.assertNull(returnedGameData.getWhiteUsername());
+        Assertions.assertEquals(new ChessGame(), returnedGameData.getChessGame());
+    }
+    @Test
+    @DisplayName("create 2 games")
+    public void create2Games() throws DataAccessException{
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        GameData returnedGameData1 = gameDAOObj.getGame(firstGameId);
+        Assertions.assertEquals(firstGameId, returnedGameData1.getGameID());
+        Assertions.assertEquals("firstGame", returnedGameData1.getGameName());
+        Assertions.assertNull(returnedGameData1.getBlackUsername());
+        Assertions.assertNull(returnedGameData1.getWhiteUsername());
+        Assertions.assertEquals(new ChessGame(), returnedGameData1.getChessGame());
+
+        int secondGameId = gameDAOObj.createGame("secondGame");
+        GameData returnedGameData2 = gameDAOObj.getGame(secondGameId);
+        Assertions.assertEquals(secondGameId, returnedGameData2.getGameID());
+        Assertions.assertEquals("secondGame", returnedGameData2.getGameName());
+        Assertions.assertNull(returnedGameData2.getBlackUsername());
+        Assertions.assertNull(returnedGameData2.getWhiteUsername());
+        Assertions.assertEquals(new ChessGame(), returnedGameData2.getChessGame());
+
+    }
+    @Test
+    @DisplayName("create duplicate game")
+    public void createDuplicateGame() throws DataAccessException{
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        GameData returnedGameData1 = gameDAOObj.getGame(firstGameId);
+        Assertions.assertEquals(firstGameId, returnedGameData1.getGameID());
+        Assertions.assertEquals("firstGame", returnedGameData1.getGameName());
+        Assertions.assertNull(returnedGameData1.getBlackUsername());
+        Assertions.assertNull(returnedGameData1.getWhiteUsername());
+        Assertions.assertEquals(new ChessGame(), returnedGameData1.getChessGame());
+        Assertions.assertThrows(DataAccessException.class, ()-> gameDAOObj.createGame("firstGame"));
     }
 
-
     @Test
-    @DisplayName("register multiple players")
-    public void registerMultiplePlayers(){
-        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
-        ResponseAuth player2RegisteredAuth = testServiceObj.register(player2Data);
-        ResponseAuth player3RegisteredAuth = testServiceObj.register(player3Data);
+    @DisplayName("get invalid game")
+    public void getInvalidGame() throws DataAccessException{
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        GameData returnedGameData1 = gameDAOObj.getGame(200);
+        Assertions.assertNull(returnedGameData1);
+    }
+    @Test
+    @DisplayName("list games")
+    public void listGames() throws DataAccessException{
+        int gameListSize = 2;
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        int secondGameId = gameDAOObj.createGame("secondGame");
+        Collection<GameData> returnedGameList = gameDAOObj.listGames();
+        Assertions.assertEquals(gameListSize, returnedGameList.size());
+    }
+    @Test
+    @DisplayName("update game white username")
+    public void updateGameWhiteUsername() throws DataAccessException{
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        GameData returnedGameDataFirst = gameDAOObj.getGame(firstGameId);
+        GameData UpdatedGame1 = new GameData(returnedGameDataFirst.getGameID(), returnedGameDataFirst.getGameName(),
+                player1User.getUsername(), null, returnedGameDataFirst.getChessGame());
+        gameDAOObj.updateGame(UpdatedGame1.getGameID(), UpdatedGame1);
+        GameData returnedGameDataSecond = gameDAOObj.getGame(firstGameId);
+        Assertions.assertEquals(firstGameId, returnedGameDataSecond.getGameID());
+        Assertions.assertEquals("firstGame", returnedGameDataSecond.getGameName());
+        Assertions.assertEquals(player1User.getUsername(), returnedGameDataSecond.getWhiteUsername());
+        Assertions.assertNull(returnedGameDataSecond.getBlackUsername());
+        Assertions.assertEquals(new ChessGame(), returnedGameDataSecond.getChessGame());
+    }
+    @Test
+    @DisplayName("update game with both player usernames")
+    public void updateGameBothUsername() throws DataAccessException{
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        GameData returnedGameDataFirst = gameDAOObj.getGame(firstGameId);
+        GameData UpdatedGamePlayer1 = new GameData(returnedGameDataFirst.getGameID(),
+                returnedGameDataFirst.getGameName(), player1User.getUsername(),
+                null, returnedGameDataFirst.getChessGame());
+        gameDAOObj.updateGame(UpdatedGamePlayer1.getGameID(), UpdatedGamePlayer1);
+        GameData returnedGameDataSecond = gameDAOObj.getGame(firstGameId);
+        GameData UpdatedGamePlayer2 = new GameData(returnedGameDataSecond.getGameID(),
+                returnedGameDataSecond.getGameName(),
+                returnedGameDataSecond.getWhiteUsername(), player2User.getUsername(),
+                returnedGameDataSecond.getChessGame());
+        gameDAOObj.updateGame(UpdatedGamePlayer2.getGameID(), UpdatedGamePlayer2);
+        GameData returnedGameDataThird = gameDAOObj.getGame(firstGameId);
 
-        Assertions.assertNull(player1RegisteredAuth.message());
-        Assertions.assertNull(player2RegisteredAuth.message());
-        Assertions.assertNull(player3RegisteredAuth.message());
+        Assertions.assertEquals(firstGameId, returnedGameDataThird.getGameID());
+        Assertions.assertEquals("firstGame", returnedGameDataThird.getGameName());
+        Assertions.assertEquals(player1User.getUsername(), returnedGameDataThird.getWhiteUsername());
+        Assertions.assertEquals(player2User.getUsername(), returnedGameDataThird.getBlackUsername());
+        Assertions.assertEquals(new ChessGame(), returnedGameDataThird.getChessGame());
+    }
+    @Test
+    @DisplayName("update game white username twice")
+    public void updateGameWhiteUsernameTwice() throws DataAccessException{
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        GameData returnedGameDataFirst = gameDAOObj.getGame(firstGameId);
+        GameData UpdatedGame1 = new GameData(returnedGameDataFirst.getGameID(), returnedGameDataFirst.getGameName(),
+                player1User.getUsername(), null, returnedGameDataFirst.getChessGame());
+        gameDAOObj.updateGame(UpdatedGame1.getGameID(), UpdatedGame1);
+        GameData returnedGameDataSecond = gameDAOObj.getGame(UpdatedGame1.getGameID());
+        Assertions.assertEquals(player1User.getUsername(), returnedGameDataSecond.getWhiteUsername());
 
-        ErrorResponce logoutPlayer1 = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
-        ErrorResponce logoutPlayer2 = testServiceObj.logout(new AuthData(player2RegisteredAuth.username(), player2RegisteredAuth.authToken()));
-        ErrorResponce logoutPlayer3 = testServiceObj.logout(new AuthData(player3RegisteredAuth.username(), player3RegisteredAuth.authToken()));
+        GameData updatedGame2 = new GameData(returnedGameDataFirst.getGameID(), returnedGameDataFirst.getGameName(),
+                player2User.getUsername(), null, returnedGameDataFirst.getChessGame());
+        gameDAOObj.updateGame(updatedGame2.getGameID(), updatedGame2);
+        GameData returnedGameDataThird = gameDAOObj.getGame(updatedGame2.getGameID());
+        Assertions.assertEquals(player2User.getUsername(), returnedGameDataThird.getWhiteUsername());
 
-        Assertions.assertNull(logoutPlayer1.message());
-        Assertions.assertNull(logoutPlayer2.message());
-        Assertions.assertNull(logoutPlayer3.message());
+    }
+    @Test
+    @DisplayName("update invalid game")
+    public void updateInvalidGame() throws DataAccessException{
+        int firstGameId = gameDAOObj.createGame("firstGame");
+        GameData returnedGameDataFirst = gameDAOObj.getGame(firstGameId);
+        GameData UpdatedGame1 = new GameData(200, returnedGameDataFirst.getGameName(),
+                player1User.getUsername(), null, returnedGameDataFirst.getChessGame());
+        Assertions.assertThrows(DataAccessException.class, () ->
+                gameDAOObj.updateGame(UpdatedGame1.getGameID(), UpdatedGame1));
+
     }
 }

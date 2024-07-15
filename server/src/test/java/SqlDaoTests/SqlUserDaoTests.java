@@ -1,58 +1,66 @@
 package SqlDaoTests;
-import responserequest.ErrorResponce;
-import responserequest.ResponseAuth;
+
+import dataaccess.UserDAO;
+import dataaccess.DataAccessException;
+import dataaccess.SqlUserDAO;
 import model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import service.AllServices;
 
 public class SqlUserDaoTests {
+    public SqlUserDaoTests(){
+        try{
+            userDAOObj = new SqlUserDAO();
+            userDAOObj.clearUserDataBase();
+        }catch(DataAccessException ex){
+            System.out.println("Could not create Auth DAO");
+        }
+    }
+    static UserDAO userDAOObj;
+    UserData player1User;
+    UserData player2User;
     @BeforeEach
     public void setUp() {
-        testServiceObj = new AllServices();
-        testServiceObj.clearDatabases();
-        player1Data = new UserData("player1_username", "player1_password", "player1_email");
-        player2Data = new UserData("player2_username", "player2_password", "player2_email");
-        player3Data = new UserData("player3_username", "player3_password", "player3_email");
-        badRequestAuthError = new ResponseAuth(null, null, "Error: bad request");
-        alreadyTakenAuthError = new ResponseAuth(null, null, "Error: already taken");
-        unauthorizedAuthError = new ResponseAuth(null, null, "Error: unauthorized");
-        unauthorizedResError = new ErrorResponce("Error: unauthorized");
+        player1User = new UserData("player1_username", "player1 password", "player1_email");
+        player2User = new UserData("player2_username", "player2 password", "player2_email");
     }
 
     @Test
-    @DisplayName("register player 1")
-    public void registerPlayer1(){
-        ResponseAuth registerAuth = testServiceObj.register(player1Data);
-        ResponseAuth loginAuth = testServiceObj.login(player1Data);
-        Assertions.assertNull(registerAuth.message());
-        Assertions.assertNull(loginAuth.message());
-        ErrorResponce logoutRegisterRes = testServiceObj.logout(new AuthData(registerAuth.username(), registerAuth.authToken()));
-        ErrorResponce logoutLoginRes = testServiceObj.logout(new AuthData(loginAuth.username(), loginAuth.authToken()));
-        Assertions.assertNull(logoutRegisterRes.message());
-        Assertions.assertNull(logoutLoginRes.message());
+    @DisplayName("create player 1 user")
+    public void createPlayer1User() throws DataAccessException{
+        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail());
+        UserData returnedUserData = userDAOObj.getUser(player1User.getUsername());
+        Assertions.assertEquals(player1User, returnedUserData);
+    }
+    @Test
+    @DisplayName("create 2 users")
+    public void create2Users() throws DataAccessException{
+        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail());
+        UserData returnedUserData1 = userDAOObj.getUser(player1User.getUsername());
+        Assertions.assertEquals(player1User, returnedUserData1);
+        userDAOObj.createUser(player2User.getUsername(), player2User.getPassword(), player2User.getEmail());
+        UserData returnedUserData2 = userDAOObj.getUser(player2User.getUsername());
+        Assertions.assertEquals(player2User, returnedUserData2);
+    }
+    @Test
+    @DisplayName("create duplicate user")
+    public void createDuplicateUser() throws DataAccessException{
+        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail());
+        UserData returnedUserData1 = userDAOObj.getUser(player1User.getUsername());
+        Assertions.assertEquals(player1User, returnedUserData1);
+        Assertions.assertThrows(DataAccessException.class, ()-> userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail()));
+        Assertions.assertThrows(DataAccessException.class, ()-> userDAOObj.createUser(player1User.getUsername(), player2User.getPassword(), player2User.getEmail()));
+
     }
 
-
     @Test
-    @DisplayName("register multiple players")
-    public void registerMultiplePlayers(){
-        ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
-        ResponseAuth player2RegisteredAuth = testServiceObj.register(player2Data);
-        ResponseAuth player3RegisteredAuth = testServiceObj.register(player3Data);
+    @DisplayName("get invalid user")
+    public void getInvalidUser() throws DataAccessException{
+        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail());
+        UserData returnedUserData1 = userDAOObj.getUser(player2User.getUsername());
+        Assertions.assertNull(returnedUserData1);
 
-        Assertions.assertNull(player1RegisteredAuth.message());
-        Assertions.assertNull(player2RegisteredAuth.message());
-        Assertions.assertNull(player3RegisteredAuth.message());
-
-        ErrorResponce logoutPlayer1 = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
-        ErrorResponce logoutPlayer2 = testServiceObj.logout(new AuthData(player2RegisteredAuth.username(), player2RegisteredAuth.authToken()));
-        ErrorResponce logoutPlayer3 = testServiceObj.logout(new AuthData(player3RegisteredAuth.username(), player3RegisteredAuth.authToken()));
-
-        Assertions.assertNull(logoutPlayer1.message());
-        Assertions.assertNull(logoutPlayer2.message());
-        Assertions.assertNull(logoutPlayer3.message());
     }
 }
