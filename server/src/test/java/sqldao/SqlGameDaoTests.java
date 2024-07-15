@@ -1,4 +1,4 @@
-package sqldaotests;
+package sqldao;
 
 import chess.ChessGame;
 import dataaccess.GameDAO;

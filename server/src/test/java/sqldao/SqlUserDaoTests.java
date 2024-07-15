@@ -1,4 +1,4 @@
-package sqldaotests;
+package sqldao;
 
 import dataaccess.UserDAO;
 import dataaccess.DataAccessException;
