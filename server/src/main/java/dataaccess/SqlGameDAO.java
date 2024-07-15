@@ -26,7 +26,8 @@ public class SqlGameDAO implements GameDAO{
                     preparedStatement.executeUpdate();
                 }
         } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException(String.format("Unable to configure database: %s",
+                    ex.getMessage()));
         }
     }
     @Override
@@ -46,7 +47,8 @@ public class SqlGameDAO implements GameDAO{
                 preparedStatement.executeUpdate();
             }
         }catch(DataAccessException | SQLException ex){
-            throw new DataAccessException(String.format("Unable to resent auto increment vars data: %s", ex.getMessage()));
+            throw new DataAccessException(String.format("Unable to resent auto increment vars data: %s",
+                    ex.getMessage()));
         }
     }
 
@@ -85,9 +87,11 @@ public class SqlGameDAO implements GameDAO{
         // connects to the database and inserts a new game into the game table
         // and returns auto generated game id
         ChessGame chessGameObj = new ChessGame();
-        var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGame) VALUES (?,?,?,?)";
+        var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGame) " +
+                "VALUES (?,?,?,?)";
         try(var conn = DatabaseManager.getConnection()){
-            try(var preparedStatement = conn.prepareStatement(insertStatement, Statement.RETURN_GENERATED_KEYS)){
+            try(var preparedStatement = conn.prepareStatement(insertStatement,
+                    Statement.RETURN_GENERATED_KEYS)){
                 preparedStatement.setString(1, gameName);
                 preparedStatement.setString(2, null);
                 preparedStatement.setString(3, null);
@@ -118,7 +122,8 @@ public class SqlGameDAO implements GameDAO{
                         String returnedGameName = resultSet.getString("gameName");
                         String returnedWhiteUserName = resultSet.getString("whiteUserName");
                         String returnedBlackUserName = resultSet.getString("blackUserName");
-                        ChessGame returnedChessGame = jsonToGame(resultSet.getString("chessGame")); // may not work
+                        ChessGame returnedChessGame =
+                                jsonToGame(resultSet.getString("chessGame"));
                         return new GameData(returnedGameId, returnedGameName,
                                 returnedWhiteUserName, returnedBlackUserName, returnedChessGame);
                     }
@@ -144,7 +149,8 @@ public class SqlGameDAO implements GameDAO{
                         String returnedGameName = resultSet.getString("gameName");
                         String returnedWhiteUserName = resultSet.getString("whiteUserName");
                         String returnedBlackUserName = resultSet.getString("blackUserName");
-                        ChessGame returnedChessGame = jsonToGame(resultSet.getString("chessGame")); // may not work
+                        ChessGame returnedChessGame =
+                                jsonToGame(resultSet.getString("chessGame"));
                         gameList.add(new GameData(returnedGameId, returnedGameName,
                                 returnedWhiteUserName, returnedBlackUserName, returnedChessGame));
                     }
@@ -166,7 +172,8 @@ public class SqlGameDAO implements GameDAO{
         }
         // connects to the database and updates the values in the game row queried above
         // with the values provided
-        var updateStatement = "UPDATE game SET gameName=?, whiteUserName=?, blackUserName=?, chessGame=? where id=?";  //
+        var updateStatement = "UPDATE game SET gameName=?, whiteUserName=?, " +
+                "blackUserName=?, chessGame=? where id=?";  //
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement(updateStatement)){
                 preparedStatement.setString(1, updatedGameObject.getGameName());

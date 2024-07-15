@@ -107,8 +107,8 @@ public class ChessGame {
                 foundValidMove = true;
                 if(move.getPromotionPiece() != null){
                     promotedPiece =
-                            new ChessPiece(currentChessBoard.getPiece(move.getStartPosition()).getTeamColor(),
-                                    move.getPromotionPiece());
+                            new ChessPiece(currentChessBoard.getPiece(
+                                    move.getStartPosition()).getTeamColor(), move.getPromotionPiece());
                 }else{
                     promotedPiece = currentChessBoard.getPiece(move.getStartPosition());
                 }
@@ -139,8 +139,11 @@ public class ChessGame {
         for(int i = 0; i < 8; i++){
             for(int j = 0; j < 8; j++){
                 if(currentChessBoard.getPiece(new ChessPosition(i+1,j+1)) != null){
-                    if(currentChessBoard.getPiece(new ChessPosition(i+1,j+1)).getPieceType() == ChessPiece.PieceType.KING){
-                        if(currentChessBoard.getPiece(new ChessPosition(i+1,j+1)).getTeamColor() == teamColor){
+                    if(currentChessBoard.getPiece(
+                            new ChessPosition(i+1,j+1)).getPieceType() ==
+                            ChessPiece.PieceType.KING){
+                        if(currentChessBoard.getPiece(
+                                new ChessPosition(i+1,j+1)).getTeamColor() == teamColor){
                             kingPosition = new ChessPosition(i+1,j+1);
                             break outerLoop;
                         }
@@ -151,10 +154,14 @@ public class ChessGame {
         for(int i = 0; i < 8; i++){
             for(int j = 0; j < 8; j++){
                 if(currentChessBoard.getPiece(new ChessPosition(i+1,j+1)) != null){
-                    if(currentChessBoard.getPiece(new ChessPosition(i+1,j+1)).getTeamColor() != teamColor){
+                    if(currentChessBoard.getPiece(
+                            new ChessPosition(i+1,j+1)).getTeamColor() != teamColor){
                         ChessMove[] possibleCheckMoves;
-                        possibleCheckMoves = currentChessBoard.getPiece(new ChessPosition(i + 1, j + 1)).
-                                pieceMoves(currentChessBoard, new ChessPosition(i + 1, j + 1)).toArray(new ChessMove[0]);
+                        possibleCheckMoves = currentChessBoard.getPiece(
+                                new ChessPosition(i + 1, j + 1)).
+                                pieceMoves(currentChessBoard,
+                                        new ChessPosition(i + 1, j + 1)).toArray(
+                                                new ChessMove[0]);
                         for(int k = 0; k < possibleCheckMoves.length; k++){
                             if(possibleCheckMoves[k].getEndPosition().equals(kingPosition)){
                                 return true;
@@ -184,7 +191,8 @@ public class ChessGame {
                 ChessPosition currentStartingPosition = new ChessPosition(i+1,j+1);
                 if(currentChessBoard.getPiece(currentStartingPosition) != null){
                     if(currentChessBoard.getPiece(currentStartingPosition).getTeamColor() == teamColor){
-                        Collection<ChessMove> possibleCurrentMoves = this.validMoves(currentStartingPosition);
+                        Collection<ChessMove> possibleCurrentMoves =
+                                this.validMoves(currentStartingPosition);
                         if(possibleCurrentMoves.size() > 0){
                             return false;
                         }
@@ -213,7 +221,8 @@ public class ChessGame {
                 ChessPosition currentStartingPosition = new ChessPosition(i+1,j+1);
                 if(currentChessBoard.getPiece(currentStartingPosition) != null){
                     if(currentChessBoard.getPiece(currentStartingPosition).getTeamColor() == teamColor){
-                        Collection<ChessMove> possibleCurrentMoves = this.validMoves(currentStartingPosition);
+                        Collection<ChessMove> possibleCurrentMoves =
+                                this.validMoves(currentStartingPosition);
                         if(possibleCurrentMoves.size() > 0){
                             return false;
                         }
@@ -247,7 +256,8 @@ public class ChessGame {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessGame chessGame = (ChessGame) o;
-        return currentTeamTurn == chessGame.currentTeamTurn && Objects.equals(currentChessBoard, chessGame.currentChessBoard);
+        return currentTeamTurn == chessGame.currentTeamTurn &&
+                Objects.equals(currentChessBoard, chessGame.currentChessBoard);
     }
 
     @Override

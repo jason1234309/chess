@@ -25,7 +25,8 @@ public class SqlUserDAO implements UserDAO{
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new DataAccessException(String.format("Unable to configure database: %s",
+                    ex.getMessage()));
         }
     }
     @Override

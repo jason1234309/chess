@@ -21,12 +21,18 @@ public class UserServiceTests {
     public void setUp() {
         testServiceObj = new AllServices();
         testServiceObj.clearDatabases();
-        player1Data = new UserData("player1_username", "player1_password", "player1_email");
-        player2Data = new UserData("player2_username", "player2_password", "player2_email");
-        player3Data = new UserData("player3_username", "player3_password", "player3_email");
-        badRequestAuthError = new ResponseAuth(null, null, "Error: bad request");
-        alreadyTakenAuthError = new ResponseAuth(null, null, "Error: already taken");
-        unauthorizedAuthError = new ResponseAuth(null, null, "Error: unauthorized");
+        player1Data = new UserData("player1_username",
+                "player1_password", "player1_email");
+        player2Data = new UserData("player2_username",
+                "player2_password", "player2_email");
+        player3Data = new UserData("player3_username",
+                "player3_password", "player3_email");
+        badRequestAuthError = new ResponseAuth(null,
+                null, "Error: bad request");
+        alreadyTakenAuthError = new ResponseAuth(null,
+                null, "Error: already taken");
+        unauthorizedAuthError = new ResponseAuth(null,
+                null, "Error: unauthorized");
         unauthorizedResError = new ErrorResponce("Error: unauthorized");
     }
 
@@ -37,8 +43,10 @@ public class UserServiceTests {
         ResponseAuth loginAuth = testServiceObj.login(player1Data);
         Assertions.assertNull(registerAuth.message());
         Assertions.assertNull(loginAuth.message());
-        ErrorResponce logoutRegisterRes = testServiceObj.logout(new AuthData(registerAuth.username(), registerAuth.authToken()));
-        ErrorResponce logoutLoginRes = testServiceObj.logout(new AuthData(loginAuth.username(), loginAuth.authToken()));
+        ErrorResponce logoutRegisterRes = testServiceObj.logout(
+                new AuthData(registerAuth.username(), registerAuth.authToken()));
+        ErrorResponce logoutLoginRes = testServiceObj.logout(
+                new AuthData(loginAuth.username(), loginAuth.authToken()));
         Assertions.assertNull(logoutRegisterRes.message());
         Assertions.assertNull(logoutLoginRes.message());
     }
@@ -55,9 +63,12 @@ public class UserServiceTests {
         Assertions.assertNull(player2RegisteredAuth.message());
         Assertions.assertNull(player3RegisteredAuth.message());
 
-        ErrorResponce logoutPlayer1 = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
-        ErrorResponce logoutPlayer2 = testServiceObj.logout(new AuthData(player2RegisteredAuth.username(), player2RegisteredAuth.authToken()));
-        ErrorResponce logoutPlayer3 = testServiceObj.logout(new AuthData(player3RegisteredAuth.username(), player3RegisteredAuth.authToken()));
+        ErrorResponce logoutPlayer1 = testServiceObj.logout(
+                new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        ErrorResponce logoutPlayer2 = testServiceObj.logout(
+                new AuthData(player2RegisteredAuth.username(), player2RegisteredAuth.authToken()));
+        ErrorResponce logoutPlayer3 = testServiceObj.logout(
+                new AuthData(player3RegisteredAuth.username(), player3RegisteredAuth.authToken()));
 
         Assertions.assertNull(logoutPlayer1.message());
         Assertions.assertNull(logoutPlayer2.message());
@@ -83,9 +94,11 @@ public class UserServiceTests {
     public void loginPlayer1(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         Assertions.assertNull(player1RegisteredAuth.message());
-        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(),
+                player1RegisteredAuth.authToken()));
         ResponseAuth player1LoginAuth = testServiceObj.login(player1Data);
-        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(),
+                player1RegisteredAuth.authToken()));
         Assertions.assertNull(player1LoginAuth.message());
     }
     @Test
@@ -100,19 +113,25 @@ public class UserServiceTests {
     public void loginWrongPlayer(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
         ResponseAuth player2RegisteredAuth = testServiceObj.register(player2Data);
-        ErrorResponce player1LogoutReg = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
-        ErrorResponce player2LogoutReg = testServiceObj.logout(new AuthData(player2RegisteredAuth.username(), player2RegisteredAuth.authToken()));
+        ErrorResponce player1LogoutReg = testServiceObj.logout(
+                new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        ErrorResponce player2LogoutReg = testServiceObj.logout(
+                new AuthData(player2RegisteredAuth.username(), player2RegisteredAuth.authToken()));
         ResponseAuth player1Login = testServiceObj.login(player1Data);
-        ResponseAuth fakeLogin = new ResponseAuth(player2Data.getUsername(),"notRealAuth", null);
-        ErrorResponce fakeLogout = testServiceObj.logout(new AuthData(fakeLogin.username(), fakeLogin.authToken()));
+        ResponseAuth fakeLogin = new ResponseAuth(player2Data.getUsername(),
+                "notRealAuth", null);
+        ErrorResponce fakeLogout = testServiceObj.logout(
+                new AuthData(fakeLogin.username(), fakeLogin.authToken()));
         Assertions.assertEquals(fakeLogout, unauthorizedResError);
     }
     @Test
     @DisplayName("logout player twice")
     public void logoutPlayerTwice(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
-        ErrorResponce firstLogoutRes = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
-        ErrorResponce secondLogoutRes = testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        ErrorResponce firstLogoutRes = testServiceObj.logout(
+                new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        ErrorResponce secondLogoutRes = testServiceObj.logout(
+                new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
         Assertions.assertNull(firstLogoutRes.message());
         Assertions.assertEquals(secondLogoutRes, new ErrorResponce("Error: unauthorized"));
     }
@@ -120,7 +139,8 @@ public class UserServiceTests {
     @DisplayName("login wrong password")
     public void loginWrongPassword(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
-        UserData mixedUser = new UserData(player1Data.getUsername(), player2Data.getPassword(), player3Data.getEmail());
+        UserData mixedUser = new UserData(player1Data.getUsername(),
+                player2Data.getPassword(), player3Data.getEmail());
         ResponseAuth mixedRegisteredAuth = testServiceObj.login(mixedUser);
         Assertions.assertEquals(mixedRegisteredAuth, unauthorizedAuthError);
 
@@ -146,9 +166,12 @@ public class UserServiceTests {
         ResponseAuth player1LoginAuth = testServiceObj.login(player1Data);
         ResponseAuth player2LoginAuth = testServiceObj.login(player2Data);
         ResponseAuth player3LoginAuth = testServiceObj.login(player3Data);
-        ErrorResponce player1LogoutAuth = testServiceObj.logout(new AuthData(player1LoginAuth.username(), player1LoginAuth.authToken()));
-        ErrorResponce player2LogoutAuth = testServiceObj.logout(new AuthData(player2LoginAuth.username(), player2LoginAuth.authToken()));
-        ErrorResponce player3LogoutAuth = testServiceObj.logout(new AuthData(player3LoginAuth.username(), player3LoginAuth.authToken()));
+        ErrorResponce player1LogoutAuth = testServiceObj.logout(
+                new AuthData(player1LoginAuth.username(), player1LoginAuth.authToken()));
+        ErrorResponce player2LogoutAuth = testServiceObj.logout(
+                new AuthData(player2LoginAuth.username(), player2LoginAuth.authToken()));
+        ErrorResponce player3LogoutAuth = testServiceObj.logout(
+                new AuthData(player3LoginAuth.username(), player3LoginAuth.authToken()));
         Assertions.assertNull(player1LoginAuth.message());
         Assertions.assertNull(player2LoginAuth.message());
         Assertions.assertNull(player3LoginAuth.message());
@@ -160,13 +183,17 @@ public class UserServiceTests {
     @DisplayName("Login and LogoutPlayer1ThreeTimes")
     public void loginLogoutPlayer1ThreeTimes(){
         ResponseAuth player1RegisteredAuth = testServiceObj.register(player1Data);
-        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(), player1RegisteredAuth.authToken()));
+        testServiceObj.logout(new AuthData(player1RegisteredAuth.username(),
+                player1RegisteredAuth.authToken()));
         ResponseAuth player1LoginAuth1 = testServiceObj.login(player1Data);
         ResponseAuth player1LoginAuth2 = testServiceObj.login(player1Data);
         ResponseAuth player1LoginAuth3 = testServiceObj.login(player1Data);
-        ErrorResponce playerLogoutAuth1 = testServiceObj.logout(new AuthData(player1LoginAuth1.username(), player1LoginAuth1.authToken()));
-        ErrorResponce playerLogoutAuth2 = testServiceObj.logout(new AuthData(player1LoginAuth2.username(), player1LoginAuth2.authToken()));
-        ErrorResponce playerLogoutAuth3 = testServiceObj.logout(new AuthData(player1LoginAuth3.username(), player1LoginAuth3.authToken()));
+        ErrorResponce playerLogoutAuth1 = testServiceObj.logout(
+                new AuthData(player1LoginAuth1.username(), player1LoginAuth1.authToken()));
+        ErrorResponce playerLogoutAuth2 = testServiceObj.logout(
+                new AuthData(player1LoginAuth2.username(), player1LoginAuth2.authToken()));
+        ErrorResponce playerLogoutAuth3 = testServiceObj.logout(
+                new AuthData(player1LoginAuth3.username(), player1LoginAuth3.authToken()));
         Assertions.assertNull(player1LoginAuth1.message());
         Assertions.assertNull(player1LoginAuth2.message());
         Assertions.assertNull(player1LoginAuth3.message());

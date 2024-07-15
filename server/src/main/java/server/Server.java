@@ -112,7 +112,8 @@ public class Server {
         String reqAuthToken = req.headers("authorization");
         GameNameReq gameName = serializer.fromJson(req.body(), GameNameReq.class);
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
-        GameCreationResponse createGameResponse = databaseServiceObj.createGame(tempAuthObj, gameName.gameName());
+        GameCreationResponse createGameResponse = databaseServiceObj.createGame(tempAuthObj,
+                gameName.gameName());
         if(createGameResponse.message() == null){
             res.status(200);
             return new Gson().toJson(createGameResponse);
@@ -134,7 +135,8 @@ public class Server {
         String reqAuthToken = req.headers("authorization");
         JoinRequestBody reqBodyObj = serializer.fromJson(req.body(), JoinRequestBody.class);
         AuthData tempAuthObj = new AuthData(null, reqAuthToken);
-        ErrorResponce joinGameResponse = databaseServiceObj.joinGame(tempAuthObj, reqBodyObj.playerColor(), reqBodyObj.gameID());
+        ErrorResponce joinGameResponse = databaseServiceObj.joinGame(tempAuthObj,
+                reqBodyObj.playerColor(), reqBodyObj.gameID());
         if(joinGameResponse.message() == null){
             res.status(200);
             return new Gson().toJson(joinGameResponse);

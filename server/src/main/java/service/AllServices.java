@@ -62,7 +62,8 @@ public class AllServices {
             // calls the create auth DAO method to add the new auth to the database
             AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
             authDAOObj.createAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken());
-            return new ResponseAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken(), null);
+            return new ResponseAuth(brandNewAuthToken.getUsername(),
+                    brandNewAuthToken.getAuthToken(), null);
         }catch(DataAccessException e){
             return new ResponseAuth(null, null, e.getMessage());
         }
@@ -86,7 +87,8 @@ public class AllServices {
         try{
             AuthData brandNewAuthToken = new AuthData(user.getUsername(), UUID.randomUUID().toString());
             authDAOObj.createAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken());
-            return new ResponseAuth(brandNewAuthToken.getUsername(), brandNewAuthToken.getAuthToken(), null);
+            return new ResponseAuth(brandNewAuthToken.getUsername(),
+                    brandNewAuthToken.getAuthToken(), null);
         }catch(DataAccessException e){
             return new ResponseAuth(null, null, e.getMessage());
         }
@@ -165,8 +167,9 @@ public class AllServices {
         try{
             AuthData fullUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
             GameData currentGame = gameDAOObj.getGame(gameId);
-            // if the game object exists, then the current game is checked to see if the provided player color
-            // is null and can be added to the current game. if the current teamcolor is taken throws
+            // if the game object exists, then the current game is checked to see
+            // if the provided player color is null and can be added to the current game.
+            // if the current teamcolor is taken throws
             // a DataAccessException
             if(playerColor == ChessGame.TeamColor.BLACK){
                 if(currentGame.getBlackUsername() == null){

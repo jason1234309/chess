@@ -1,4 +1,4 @@
-package SqlDaoTests;
+package sqldaotests;
 
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -52,7 +52,8 @@ public class SqlAuthDaoTests {
         AuthData returnedAuthData1 = authDAOObj.getAuth(player1Auth.getAuthToken());
         Assertions.assertEquals(player1Auth, returnedAuthData1);
         authDAOObj.deleteAuth(returnedAuthData1.getAuthToken());
-        Assertions.assertThrows(DataAccessException.class, ()-> authDAOObj.deleteAuth(returnedAuthData1.getAuthToken()));
+        Assertions.assertThrows(DataAccessException.class, ()->
+                authDAOObj.deleteAuth(returnedAuthData1.getAuthToken()));
     }
     @Test
     @DisplayName("get invalid auth")
@@ -68,6 +69,7 @@ public class SqlAuthDaoTests {
         authDAOObj.createAuth(player1Auth.getUsername(), player1Auth.getAuthToken());
         AuthData returnedAuthData1 = authDAOObj.getAuth(player1Auth.getAuthToken());
         Assertions.assertEquals(player1Auth, returnedAuthData1);
-        Assertions.assertThrows(DataAccessException.class, ()-> authDAOObj.deleteAuth("invalid auth"));
+        Assertions.assertThrows(DataAccessException.class, ()->
+                authDAOObj.deleteAuth("invalid auth"));
     }
 }

@@ -1,4 +1,4 @@
-package SqlDaoTests;
+package sqldaotests;
 
 import dataaccess.UserDAO;
 import dataaccess.DataAccessException;
@@ -23,42 +23,53 @@ public class SqlUserDaoTests {
     UserData player2User;
     @BeforeEach
     public void setUp() {
-        player1User = new UserData("player1_username", "player1 password", "player1_email");
-        player2User = new UserData("player2_username", "player2 password", "player2_email");
+        player1User = new UserData("player1_username",
+                "player1 password", "player1_email");
+        player2User = new UserData("player2_username",
+                "player2 password", "player2_email");
     }
 
     @Test
     @DisplayName("create player 1 user")
     public void createPlayer1User() throws DataAccessException{
-        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail());
+        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(),
+                player1User.getEmail());
         UserData returnedUserData = userDAOObj.getUser(player1User.getUsername());
         Assertions.assertEquals(player1User, returnedUserData);
     }
     @Test
     @DisplayName("create 2 users")
     public void create2Users() throws DataAccessException{
-        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail());
+        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(),
+                player1User.getEmail());
         UserData returnedUserData1 = userDAOObj.getUser(player1User.getUsername());
         Assertions.assertEquals(player1User, returnedUserData1);
-        userDAOObj.createUser(player2User.getUsername(), player2User.getPassword(), player2User.getEmail());
+        userDAOObj.createUser(player2User.getUsername(), player2User.getPassword(),
+                player2User.getEmail());
         UserData returnedUserData2 = userDAOObj.getUser(player2User.getUsername());
         Assertions.assertEquals(player2User, returnedUserData2);
     }
     @Test
     @DisplayName("create duplicate user")
     public void createDuplicateUser() throws DataAccessException{
-        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail());
+        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(),
+                player1User.getEmail());
         UserData returnedUserData1 = userDAOObj.getUser(player1User.getUsername());
         Assertions.assertEquals(player1User, returnedUserData1);
-        Assertions.assertThrows(DataAccessException.class, ()-> userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail()));
-        Assertions.assertThrows(DataAccessException.class, ()-> userDAOObj.createUser(player1User.getUsername(), player2User.getPassword(), player2User.getEmail()));
+        Assertions.assertThrows(DataAccessException.class, ()->
+                userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(),
+                        player1User.getEmail()));
+        Assertions.assertThrows(DataAccessException.class, ()->
+                userDAOObj.createUser(player1User.getUsername(), player2User.getPassword(),
+                        player2User.getEmail()));
 
     }
 
     @Test
     @DisplayName("get invalid user")
     public void getInvalidUser() throws DataAccessException{
-        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(), player1User.getEmail());
+        userDAOObj.createUser(player1User.getUsername(), player1User.getPassword(),
+                player1User.getEmail());
         UserData returnedUserData1 = userDAOObj.getUser(player2User.getUsername());
         Assertions.assertNull(returnedUserData1);
 

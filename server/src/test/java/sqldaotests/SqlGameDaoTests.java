@@ -1,4 +1,4 @@
-package SqlDaoTests;
+package sqldaotests;
 
 import chess.ChessGame;
 import dataaccess.GameDAO;
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.Collection;
 
 public class SqlGameDaoTests {
@@ -28,9 +27,12 @@ public class SqlGameDaoTests {
     UserData player3User;
     @BeforeEach
     public void setUp() {
-        player1User = new UserData("player1_username", "player1 password", "player1_email");
-        player2User = new UserData("player2_username", "player2 password", "player2_email");
-        player3User = new UserData("player3_username", "player3 password", "player3_email");
+        player1User = new UserData("player1_username",
+                "player1 password", "player1_email");
+        player2User = new UserData("player2_username",
+                "player2 password", "player2_email");
+        player3User = new UserData("player3_username",
+                "player3 password", "player3_email");
     }
 
     @Test
@@ -74,7 +76,8 @@ public class SqlGameDaoTests {
         Assertions.assertNull(returnedGameData1.getBlackUsername());
         Assertions.assertNull(returnedGameData1.getWhiteUsername());
         Assertions.assertEquals(new ChessGame(), returnedGameData1.getChessGame());
-        Assertions.assertThrows(DataAccessException.class, ()-> gameDAOObj.createGame("firstGame"));
+        Assertions.assertThrows(DataAccessException.class, ()->
+                gameDAOObj.createGame("firstGame"));
     }
 
     @Test
@@ -98,9 +101,10 @@ public class SqlGameDaoTests {
     public void updateGameWhiteUsername() throws DataAccessException{
         int firstGameId = gameDAOObj.createGame("firstGame");
         GameData returnedGameDataFirst = gameDAOObj.getGame(firstGameId);
-        GameData UpdatedGame1 = new GameData(returnedGameDataFirst.getGameID(), returnedGameDataFirst.getGameName(),
+        GameData updatedGame1 = new GameData(returnedGameDataFirst.getGameID(),
+                returnedGameDataFirst.getGameName(),
                 player1User.getUsername(), null, returnedGameDataFirst.getChessGame());
-        gameDAOObj.updateGame(UpdatedGame1.getGameID(), UpdatedGame1);
+        gameDAOObj.updateGame(updatedGame1.getGameID(), updatedGame1);
         GameData returnedGameDataSecond = gameDAOObj.getGame(firstGameId);
         Assertions.assertEquals(firstGameId, returnedGameDataSecond.getGameID());
         Assertions.assertEquals("firstGame", returnedGameDataSecond.getGameName());
@@ -113,16 +117,16 @@ public class SqlGameDaoTests {
     public void updateGameBothUsername() throws DataAccessException{
         int firstGameId = gameDAOObj.createGame("firstGame");
         GameData returnedGameDataFirst = gameDAOObj.getGame(firstGameId);
-        GameData UpdatedGamePlayer1 = new GameData(returnedGameDataFirst.getGameID(),
+        GameData updatedGamePlayer1 = new GameData(returnedGameDataFirst.getGameID(),
                 returnedGameDataFirst.getGameName(), player1User.getUsername(),
                 null, returnedGameDataFirst.getChessGame());
-        gameDAOObj.updateGame(UpdatedGamePlayer1.getGameID(), UpdatedGamePlayer1);
+        gameDAOObj.updateGame(updatedGamePlayer1.getGameID(), updatedGamePlayer1);
         GameData returnedGameDataSecond = gameDAOObj.getGame(firstGameId);
-        GameData UpdatedGamePlayer2 = new GameData(returnedGameDataSecond.getGameID(),
+        GameData updatedGamePlayer2 = new GameData(returnedGameDataSecond.getGameID(),
                 returnedGameDataSecond.getGameName(),
                 returnedGameDataSecond.getWhiteUsername(), player2User.getUsername(),
                 returnedGameDataSecond.getChessGame());
-        gameDAOObj.updateGame(UpdatedGamePlayer2.getGameID(), UpdatedGamePlayer2);
+        gameDAOObj.updateGame(updatedGamePlayer2.getGameID(), updatedGamePlayer2);
         GameData returnedGameDataThird = gameDAOObj.getGame(firstGameId);
 
         Assertions.assertEquals(firstGameId, returnedGameDataThird.getGameID());
@@ -136,13 +140,15 @@ public class SqlGameDaoTests {
     public void updateGameWhiteUsernameTwice() throws DataAccessException{
         int firstGameId = gameDAOObj.createGame("firstGame");
         GameData returnedGameDataFirst = gameDAOObj.getGame(firstGameId);
-        GameData UpdatedGame1 = new GameData(returnedGameDataFirst.getGameID(), returnedGameDataFirst.getGameName(),
+        GameData updatedGame1 = new GameData(returnedGameDataFirst.getGameID(),
+                returnedGameDataFirst.getGameName(),
                 player1User.getUsername(), null, returnedGameDataFirst.getChessGame());
-        gameDAOObj.updateGame(UpdatedGame1.getGameID(), UpdatedGame1);
-        GameData returnedGameDataSecond = gameDAOObj.getGame(UpdatedGame1.getGameID());
+        gameDAOObj.updateGame(updatedGame1.getGameID(), updatedGame1);
+        GameData returnedGameDataSecond = gameDAOObj.getGame(updatedGame1.getGameID());
         Assertions.assertEquals(player1User.getUsername(), returnedGameDataSecond.getWhiteUsername());
 
-        GameData updatedGame2 = new GameData(returnedGameDataFirst.getGameID(), returnedGameDataFirst.getGameName(),
+        GameData updatedGame2 = new GameData(returnedGameDataFirst.getGameID(),
+                returnedGameDataFirst.getGameName(),
                 player2User.getUsername(), null, returnedGameDataFirst.getChessGame());
         gameDAOObj.updateGame(updatedGame2.getGameID(), updatedGame2);
         GameData returnedGameDataThird = gameDAOObj.getGame(updatedGame2.getGameID());
@@ -154,10 +160,10 @@ public class SqlGameDaoTests {
     public void updateInvalidGame() throws DataAccessException{
         int firstGameId = gameDAOObj.createGame("firstGame");
         GameData returnedGameDataFirst = gameDAOObj.getGame(firstGameId);
-        GameData UpdatedGame1 = new GameData(200, returnedGameDataFirst.getGameName(),
+        GameData updatedGame1 = new GameData(200, returnedGameDataFirst.getGameName(),
                 player1User.getUsername(), null, returnedGameDataFirst.getChessGame());
         Assertions.assertThrows(DataAccessException.class, () ->
-                gameDAOObj.updateGame(UpdatedGame1.getGameID(), UpdatedGame1));
+                gameDAOObj.updateGame(updatedGame1.getGameID(), updatedGame1));
 
     }
 }
