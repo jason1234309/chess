@@ -2,7 +2,7 @@ package service;
 
 import dataaccess.*;
 import model.*;
-import responseRequest.*;
+import responserequest.*;
 import chess.ChessGame;
 import org.mindrot.jbcrypt.BCrypt;
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
 package service;
 
-import responseRequest.ErrorResponce;
-import responseRequest.GameCreationResponse;
-import responseRequest.GameListResponse;
-import responseRequest.ResponseAuth;
+import responserequest.ErrorResponce;
+import responserequest.GameCreationResponse;
+import responserequest.GameListResponse;
+import responserequest.ResponseAuth;
 import chess.ChessGame;
 import model.*;
 import org.junit.jupiter.api.Assertions;

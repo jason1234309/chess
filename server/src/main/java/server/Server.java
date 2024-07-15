@@ -1,6 +1,6 @@
 package server;
 
-import responseRequest.*;
+import responserequest.*;
 import model.*;
 import spark.*;
 import com.google.gson.Gson;

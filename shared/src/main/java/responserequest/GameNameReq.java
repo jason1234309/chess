@@ -1,4 +1,4 @@
-package responseRequest;
+package responserequest;
 
 public record GameNameReq(String gameName) {
 }

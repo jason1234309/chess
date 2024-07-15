@@ -1,7 +1,7 @@
 package service;
 
-import responseRequest.ErrorResponce;
-import responseRequest.ResponseAuth;
+import responserequest.ErrorResponce;
+import responserequest.ResponseAuth;
 import model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,4 +1,4 @@
-package responseRequest;
+package responserequest;
 
 import java.util.Collection;
 import model.*;
