@@ -1,9 +1,6 @@
-package sqldao;
+package dataaccess;
 
 import chess.ChessGame;
-import dataaccess.GameDAO;
-import dataaccess.DataAccessException;
-import dataaccess.SqlGameDAO;
 import model.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
