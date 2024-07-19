@@ -3,6 +3,7 @@ package ui;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import model.AuthData;
+import model.GameData;
 import responserequest.ErrorResponce;
 import responserequest.GameCreationResponse;
 import responserequest.GameListResponse;
@@ -73,6 +74,13 @@ public class Client {
                         GameListResponse listResponse = serverFacadeObj.listServerGames(validAuthData);
                         if(listResponse.message() == null){
                             System.out.println("Game list found");
+                            Integer currentGameIndex = 1;
+                            for(GameData currentGame: listResponse.games()){
+                                System.out.println(currentGameIndex.toString()
+                                        + ". Game Name:" + currentGame.getGameName() + " White Player:"
+                                        + currentGame.getWhiteUsername() + " Black Player" + currentGame.getBlackUsername() +
+                                        "\n");
+                            }
                         }else{
                             System.out.println("failed to find game list: " + listResponse.message());
                         }
