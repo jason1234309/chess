@@ -3,6 +3,9 @@ package ui;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import model.AuthData;
+import responserequest.ErrorResponce;
+import responserequest.GameCreationResponse;
+import responserequest.GameListResponse;
 import responserequest.ResponseAuth;
 
 import java.io.IOException;
@@ -59,14 +62,45 @@ public class Client {
                 String[] userArgs = line.split(" ");
                 switch (userArgs[0]) {
                     case "create":
+                        GameCreationResponse createResponse = serverFacadeObj.createClientGame(validAuthData, userArgs[1]);
+                        if(createResponse.message() == null){
+                            System.out.println("created game succefully: gameid is " + createResponse.gameID().toString());
+                        }else{
+                            System.out.println("failed to create game: " + createResponse.message());
+                        }
                         break;
                     case "list":
+                        GameListResponse listResponse = serverFacadeObj.listServerGames(validAuthData);
+                        if(listResponse.message() == null){
+                            System.out.println("Game list found");
+                        }else{
+                            System.out.println("failed to find game list: " + listResponse.message());
+                        }
                         break;
                     case "join":
+                        ErrorResponce joinResponse = serverFacadeObj.joinClientToServerGame(validAuthData, Integer.parseInt(userArgs[1]), userArgs[2]);
+                        if(joinResponse.message() == null){
+                            System.out.println("Joined game");
+                        }else{
+                            System.out.println("failed to join game: " + joinResponse.message());
+                        }
                         break;
                     case "observe":
+                        ErrorResponce observeResponse = serverFacadeObj.observeServerGame(Integer.parseInt(userArgs[1]));
+                        if(observeResponse.message() == null){
+                            System.out.println("showing game");
+                        }else{
+                            System.out.println("failed to find game: " + observeResponse.message());
+                        }
                         break;
                     case "logout":
+                        ErrorResponce logoutResponse = serverFacadeObj.logoutClient(validAuthData);
+                        if(logoutResponse.message() == null){
+                            isLoggedIn = false;
+                            System.out.println("logged out successfully");
+                        }else{
+                            System.out.println("failed to logout: " + logoutResponse.message());
+                        }
                         break;
                     case "quit":
                         isExitProgram = true;

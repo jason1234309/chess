@@ -11,9 +11,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class ServerFacade {
     private final String serverUrl;
+    private Collection<GameData> lastRecievedGameList;
 
     public ServerFacade(String url) {
         serverUrl = url;
@@ -73,19 +75,22 @@ public class ServerFacade {
             return responseObj;
         }
     }
-    public GameCreationResponse createClientGame(String gameName){
+    public GameCreationResponse createClientGame(AuthData clientAuth, String gameName){
         return new GameCreationResponse(5,null);
     }
-    public GameListResponse listServerGames(String gameName){
+    public GameListResponse listServerGames(AuthData clientAuth){
+
+        // need to initilize lastRecievedGameList
         return new GameListResponse(new ArrayList<GameData>(),null);
     }
-    public ErrorResponce joinClientToServerGame(String gameName){
+    public ErrorResponce joinClientToServerGame(AuthData clientAuth, int gameID, String playerColor){
+        // can replace player color with the correct variable or not
         return new ErrorResponce(null);
     }
-    public ErrorResponce observeServerGame(String gameName){
+    public ErrorResponce observeServerGame(int gameID){
         return new ErrorResponce(null);
     }
-    public ErrorResponce logoutClient(String gameName){
+    public ErrorResponce logoutClient(AuthData clientAuth){
         return new ErrorResponce(null);
     }
 
