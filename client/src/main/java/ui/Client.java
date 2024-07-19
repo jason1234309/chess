@@ -74,12 +74,15 @@ public class Client {
                         GameListResponse listResponse = serverFacadeObj.listServerGames(validAuthData);
                         if(listResponse.message() == null){
                             System.out.println("Game list found");
-                            Integer currentGameIndex = 1;
+                            int currentGameIndex = 1;
                             for(GameData currentGame: listResponse.games()){
-                                System.out.println(currentGameIndex.toString()
-                                        + ". Game Name:" + currentGame.getGameName() + " White Player:"
-                                        + currentGame.getWhiteUsername() + " Black Player" + currentGame.getBlackUsername() +
+                                System.out.println(Integer.toString(currentGameIndex)
+                                        + ". Game Name:" + currentGame.getGameName()+
+                                        " Game ID:" + currentGame.getGameID() +"\n" +
+                                        " White Player:" + currentGame.getWhiteUsername() +
+                                        " Black Player" + currentGame.getBlackUsername() +
                                         "\n");
+                                currentGameIndex++;
                             }
                         }else{
                             System.out.println("failed to find game list: " + listResponse.message());
@@ -94,11 +97,13 @@ public class Client {
                         }
                         break;
                     case "observe":
-                        ErrorResponce observeResponse = serverFacadeObj.observeServerGame(Integer.parseInt(userArgs[1]));
-                        if(observeResponse.message() == null){
+                        GameData requestedGame = serverFacadeObj.observeServerGame(Integer.parseInt(userArgs[1]));
+                        if(requestedGame != null){
                             System.out.println("showing game");
+                            printChessGameWhiteTop(requestedGame);
+                            printChessGameBlackTop(requestedGame);
                         }else{
-                            System.out.println("failed to find game: " + observeResponse.message());
+                            System.out.println("failed to find game");
                         }
                         break;
                     case "logout":
@@ -143,5 +148,11 @@ public class Client {
                 quit - close the chess client
                 help - displays the help message to see what options are available
                 """);
+    }
+    public void printChessGameWhiteTop(GameData currentGame){
+
+    }
+    public void printChessGameBlackTop(GameData currentGame){
+
     }
 }

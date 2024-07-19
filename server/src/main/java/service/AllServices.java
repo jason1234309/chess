@@ -139,9 +139,6 @@ public class AllServices {
         // calls the list games DAO method to get all games in the database
         try{
             Collection<GameData> totalGameList = new ArrayList<>(gameDAOObj.listGames());
-            for(GameData currentGame:totalGameList){
-                currentGame.setChessGame(null);
-            }
             return new GameListResponse(totalGameList, null);
         }catch(DataAccessException ex){
             return new GameListResponse(null, ex.getMessage());
