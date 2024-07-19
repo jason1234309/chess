@@ -6,11 +6,7 @@ import model.AuthData;
 import responserequest.ResponseAuth;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.*;
-import java.util.Map;
 import java.util.Scanner;
 
 public class Client {
@@ -42,6 +38,7 @@ public class Client {
                         if(loginResponseAuth.message() == null){
                             validAuthData = new AuthData(loginResponseAuth.username(), loginResponseAuth.authToken());
                             isLoggedIn = true;
+                            System.out.println("logged in as " + validAuthData.getUsername());
                         }else{
                             System.out.println("failed to login");
                         }
@@ -51,6 +48,7 @@ public class Client {
                         if(registerResponseAuth.message() == null){
                             validAuthData = new AuthData(registerResponseAuth.username(), registerResponseAuth.authToken());
                             isLoggedIn = true;
+                            System.out.println("logged in as " + validAuthData.getUsername());
                         }else{
                             System.out.println("failed to register");
                         }

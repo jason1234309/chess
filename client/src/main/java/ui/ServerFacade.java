@@ -38,9 +38,7 @@ public class ServerFacade {
         if(registerConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
             InputStream responseBody = registerConnection.getInputStream();
             InputStreamReader responceReader = new InputStreamReader(responseBody);
-            ResponseAuth responceObj = new Gson().fromJson(responceReader, ResponseAuth.class);
-            System.out.print(responceObj.authToken());
-            return responceObj;
+            return new Gson().fromJson(responceReader, ResponseAuth.class);
         }else{
             InputStream responseBody = registerConnection.getInputStream();
             InputStreamReader responceReader = new InputStreamReader(responseBody);
@@ -67,9 +65,7 @@ public class ServerFacade {
         if(registerConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
             InputStream responseBody = registerConnection.getInputStream();
             InputStreamReader responseReader = new InputStreamReader(responseBody);
-            ResponseAuth responseObj = new Gson().fromJson(responseReader, ResponseAuth.class);
-            System.out.print(responseObj.authToken());
-            return responseObj;
+            return new Gson().fromJson(responseReader, ResponseAuth.class);
         }else{
             InputStream responseBody = registerConnection.getInputStream();
             InputStreamReader responseReader = new InputStreamReader(responseBody);
