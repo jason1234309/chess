@@ -2,16 +2,15 @@ package ui;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import model.AuthData;
-import responserequest.ResponseAuth;
+import model.*;
+import responserequest.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.*;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.ArrayList;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -73,6 +72,21 @@ public class ServerFacade {
             System.out.println(responseObj.message());
             return responseObj;
         }
+    }
+    public GameCreationResponse createClientGame(String gameName){
+        return new GameCreationResponse(5,null);
+    }
+    public GameListResponse listServerGames(String gameName){
+        return new GameListResponse(new ArrayList<GameData>(),null);
+    }
+    public ErrorResponce joinClientToServerGame(String gameName){
+        return new ErrorResponce(null);
+    }
+    public ErrorResponce observeServerGame(String gameName){
+        return new ErrorResponce(null);
+    }
+    public ErrorResponce logoutClient(String gameName){
+        return new ErrorResponce(null);
     }
 
 }

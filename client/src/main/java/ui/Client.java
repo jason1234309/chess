@@ -27,12 +27,15 @@ public class Client {
                 String line = scanner.nextLine();
                 String[] userArgs = line.split(" ");
                 switch (userArgs[0]) {
-                    case "help":
-                        printPreLoginHelp();
-                        break;
-                    case "quit":
-                        isExitProgram = true;
-                        break;
+                    case "register":
+                        ResponseAuth registerResponseAuth = serverFacadeObj.registerClient(userArgs[1],userArgs[2],userArgs[3]);
+                        if(registerResponseAuth.message() == null){
+                            validAuthData = new AuthData(registerResponseAuth.username(), registerResponseAuth.authToken());
+                            isLoggedIn = true;
+                            System.out.println("logged in as " + validAuthData.getUsername());
+                        }else{
+                            System.out.println("failed to register");
+                        }
                     case "login":
                         ResponseAuth loginResponseAuth = serverFacadeObj.loginClient(userArgs[1],userArgs[2]);
                         if(loginResponseAuth.message() == null){
@@ -43,15 +46,12 @@ public class Client {
                             System.out.println("failed to login");
                         }
                         break;
-                    case "register":
-                        ResponseAuth registerResponseAuth = serverFacadeObj.registerClient(userArgs[1],userArgs[2],userArgs[3]);
-                        if(registerResponseAuth.message() == null){
-                            validAuthData = new AuthData(registerResponseAuth.username(), registerResponseAuth.authToken());
-                            isLoggedIn = true;
-                            System.out.println("logged in as " + validAuthData.getUsername());
-                        }else{
-                            System.out.println("failed to register");
-                        }
+                    case "quit":
+                        isExitProgram = true;
+                        break;
+                    case "help":
+                        printPreLoginHelp();
+                        break;
                 }
             }else{
                 Scanner scanner = new Scanner(System.in);
