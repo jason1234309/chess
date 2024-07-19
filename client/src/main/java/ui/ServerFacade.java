@@ -110,8 +110,9 @@ public class ServerFacade {
     }
     public GameData observeServerGame(int gameID){
         for(GameData currentGame:lastRecievedGameList){
-            if(currentGame.getGameID() == gameID);
-            return currentGame;
+            if(currentGame.getGameID() == gameID){
+                return currentGame;
+            }
         }
         return null;
     }
