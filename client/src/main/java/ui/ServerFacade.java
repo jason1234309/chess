@@ -76,7 +76,7 @@ public class ServerFacade {
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("POST");
         registerConnection.setDoOutput(true);
-        registerConnection.addRequestProperty("authToken", clientAuth.getAuthToken());
+        registerConnection.addRequestProperty("authorization", clientAuth.getAuthToken());
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("gameName", gameName);
         try(OutputStream requestBody = registerConnection.getOutputStream()){
@@ -101,7 +101,7 @@ public class ServerFacade {
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("GET");
         registerConnection.setDoOutput(true);
-        registerConnection.addRequestProperty("authToken", clientAuth.getAuthToken());
+        registerConnection.addRequestProperty("authorization", clientAuth.getAuthToken());
         registerConnection.connect();
         if(registerConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
             InputStream responseBody = registerConnection.getInputStream();
@@ -121,7 +121,7 @@ public class ServerFacade {
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("PUT");
         registerConnection.setDoOutput(true);
-        registerConnection.addRequestProperty("authToken", clientAuth.getAuthToken());
+        registerConnection.addRequestProperty("authorization", clientAuth.getAuthToken());
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("playerColor", playerColor.toUpperCase());
         jsonObject.addProperty("gameID", gameID);
@@ -155,7 +155,7 @@ public class ServerFacade {
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("DELETE");
         registerConnection.setDoOutput(true);
-        registerConnection.addRequestProperty("authToken", clientAuth.getAuthToken());
+        registerConnection.addRequestProperty("authorization", clientAuth.getAuthToken());
         registerConnection.connect();
 
         if(registerConnection.getResponseCode() == HttpURLConnection.HTTP_OK){

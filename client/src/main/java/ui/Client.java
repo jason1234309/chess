@@ -1,7 +1,5 @@
 package ui;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import model.AuthData;
 import model.GameData;
 import responserequest.ErrorResponce;
@@ -40,6 +38,7 @@ public class Client {
                         }else{
                             System.out.println("failed to register");
                         }
+                        break;
                     case "login":
                         ResponseAuth loginResponseAuth = serverFacadeObj.loginClient(userArgs[1],userArgs[2]);
                         if(loginResponseAuth.message() == null){
