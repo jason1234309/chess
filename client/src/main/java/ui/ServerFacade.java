@@ -20,6 +20,24 @@ public class ServerFacade {
     public ServerFacade(String url) {
         serverUrl = url;
     }
+
+    public ErrorResponce clearServerDataBase()throws URISyntaxException, IOException{
+        URI registerURL = new URI(serverUrl + "/db");
+        HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
+        registerConnection.setRequestMethod("DELETE");
+        registerConnection.connect();
+
+        if(registerConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
+            InputStream responseBody = registerConnection.getInputStream();
+            InputStreamReader responseReader = new InputStreamReader(responseBody);
+            return new Gson().fromJson(responseReader, ErrorResponce.class);
+        }else{
+            InputStream responseBody = registerConnection.getErrorStream();
+            InputStreamReader responseReader = new InputStreamReader(responseBody);
+            return new Gson().fromJson(responseReader, ErrorResponce.class);
+        }
+    }
+
     public ResponseAuth registerClient(String username, String password, String email)
             throws URISyntaxException, IOException {
         URI registerURL = new URI(serverUrl + "/user");
@@ -148,20 +166,15 @@ public class ServerFacade {
     }
     public GameData observeServerGame(int gameNumber){
         // this is the correct code for when list games works
+        if(lastReceivedGameList.size() <= gameNumber){
+            return null;
+        }
         int gameID = lastReceivedGameList.get(gameNumber).getGameID();
         for(GameData currentGame: lastReceivedGameList){
             if(currentGame.getGameID() == gameID){
                 return currentGame;
             }
         }
-
-//        // this code is to test drawing the chess board
-//        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
-//        out.print(EscapeSequences.ERASE_SCREEN);
-//        drawTicTacToeBoard(out);
-//        System.out.println(EscapeSequences.RESET_BG_COLOR);
-//        System.out.println(EscapeSequences.SET_TEXT_COLOR_WHITE);
-
         return null;
     }
     public ErrorResponce logoutClient(AuthData clientAuth)
