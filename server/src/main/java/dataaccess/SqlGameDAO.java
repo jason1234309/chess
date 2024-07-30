@@ -59,7 +59,7 @@ public class SqlGameDAO implements GameDAO{
     }
     public ChessGame jsonToGame(String json){
         // converts a json string into a chessGame object
-        Gson serializer = new Gson();
+        Gson serializer = new GsonBuilder().enableComplexMapKeySerialization().create();
         return serializer.fromJson(json, ChessGame.class);
     }
 

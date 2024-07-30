@@ -1,5 +1,6 @@
 package server;
 
+import com.google.gson.GsonBuilder;
 import responserequest.*;
 import model.*;
 import spark.*;
@@ -98,7 +99,8 @@ public class Server {
         GameListResponse gameListResponse = databaseServiceObj.listGames(tempAuthObj);
         if(gameListResponse.message() == null){
             res.status(200);
-            return new Gson().toJson(gameListResponse);
+            Gson serializer = new GsonBuilder().enableComplexMapKeySerialization().create();
+            return serializer.toJson(gameListResponse);
         }else if(gameListResponse.message().equals("Error: unauthorized")){
             res.status(401);
             return new Gson().toJson(gameListResponse);

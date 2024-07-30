@@ -1,20 +1,21 @@
 package ui;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import model.*;
 import responserequest.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class ServerFacade {
     private final String serverUrl;
-    private Collection<GameData> lastReceivedGameList;
+    private ArrayList<GameData> lastReceivedGameList = new ArrayList<>();
+
 
     public ServerFacade(String url) {
         serverUrl = url;
@@ -95,6 +96,7 @@ public class ServerFacade {
             return new Gson().fromJson(responseReader, GameCreationResponse.class);
         }
     }
+
     public GameListResponse listServerGames(AuthData clientAuth)
             throws IOException, URISyntaxException {
         URI registerURL = new URI(serverUrl + "/game");
@@ -106,8 +108,10 @@ public class ServerFacade {
         if(registerConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
             InputStream responseBody = registerConnection.getInputStream();
             InputStreamReader responseReader = new InputStreamReader(responseBody);
-            GameListResponse gameListResponse = new Gson().fromJson(responseReader, GameListResponse.class);
-            lastReceivedGameList = gameListResponse.games();
+            Gson serializer = new GsonBuilder().enableComplexMapKeySerialization().create();
+            GameListResponse gameListResponse = serializer.fromJson(responseReader, GameListResponse.class);
+            lastReceivedGameList.clear();
+            lastReceivedGameList.addAll(gameListResponse.games());
             return gameListResponse;
         }else{
             InputStream responseBody = registerConnection.getErrorStream();
@@ -115,8 +119,9 @@ public class ServerFacade {
             return new Gson().fromJson(responseReader, GameListResponse.class);
         }
     }
-    public ErrorResponce joinClientToServerGame(AuthData clientAuth, int gameID, String playerColor)
+    public ErrorResponce joinClientToServerGame(AuthData clientAuth, int gameNumber, String playerColor)
             throws IOException, URISyntaxException {
+        int gameID = lastReceivedGameList.get(gameNumber).getGameID();
         URI registerURL = new URI(serverUrl + "/game");
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("PUT");
@@ -141,12 +146,22 @@ public class ServerFacade {
             return new Gson().fromJson(responseReader, ErrorResponce.class);
         }
     }
-    public GameData observeServerGame(int gameID){
+    public GameData observeServerGame(int gameNumber){
+        // this is the correct code for when list games works
+        int gameID = lastReceivedGameList.get(gameNumber).getGameID();
         for(GameData currentGame: lastReceivedGameList){
             if(currentGame.getGameID() == gameID){
                 return currentGame;
             }
         }
+
+//        // this code is to test drawing the chess board
+//        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+//        out.print(EscapeSequences.ERASE_SCREEN);
+//        drawTicTacToeBoard(out);
+//        System.out.println(EscapeSequences.RESET_BG_COLOR);
+//        System.out.println(EscapeSequences.SET_TEXT_COLOR_WHITE);
+
         return null;
     }
     public ErrorResponce logoutClient(AuthData clientAuth)
@@ -168,5 +183,4 @@ public class ServerFacade {
             return new Gson().fromJson(responseReader, ErrorResponce.class);
         }
     }
-
 }

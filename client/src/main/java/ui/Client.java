@@ -8,26 +8,31 @@ import responserequest.GameListResponse;
 import responserequest.ResponseAuth;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class Client {
     ServerFacade serverFacadeObj;
+    DrawChessBoard drawChessBoardObj;
     AuthData validAuthData;
     public Client(String baseURL){
         serverFacadeObj = new ServerFacade(baseURL);
+        drawChessBoardObj = new DrawChessBoard();
     }
     public void run() throws IOException, URISyntaxException {
-        System.out.println(EscapeSequences.WHITE_KING +
-                "Welcome to 240 chess. Type help to get started" +
-                EscapeSequences.BLACK_KING);
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        System.out.print(EscapeSequences.WHITE_KING);
+        System.out.print("Welcome to 240 chess. Type help to get started");
+        System.out.println(EscapeSequences.BLACK_KING);
         boolean isLoggedIn = false;
         boolean isExitProgram = false;
         while(true){
+            Scanner scanner = new Scanner(System.in);
+            String line = scanner.nextLine();
+            String[] userArgs = line.split(" ");
             if(!isLoggedIn){
-                Scanner scanner = new Scanner(System.in);
-                String line = scanner.nextLine();
-                String[] userArgs = line.split(" ");
                 switch (userArgs[0]) {
                     case "register":
                         ResponseAuth registerResponseAuth = serverFacadeObj.registerClient(userArgs[1],userArgs[2],userArgs[3]);
@@ -57,9 +62,6 @@ public class Client {
                         break;
                 }
             }else{
-                Scanner scanner = new Scanner(System.in);
-                String line = scanner.nextLine();
-                String[] userArgs = line.split(" ");
                 switch (userArgs[0]) {
                     case "create":
                         GameCreationResponse createResponse = serverFacadeObj.createClientGame(validAuthData, userArgs[1]);
@@ -75,12 +77,10 @@ public class Client {
                             System.out.println("Game list found");
                             int currentGameIndex = 1;
                             for(GameData currentGame: listResponse.games()){
-                                System.out.println(Integer.toString(currentGameIndex)
+                                System.out.println(currentGameIndex
                                         + ". Game Name:" + currentGame.getGameName()+
-                                        " Game ID:" + currentGame.getGameID() +"\n" +
                                         " White Player:" + currentGame.getWhiteUsername() +
-                                        " Black Player" + currentGame.getBlackUsername() +
-                                        "\n");
+                                        " Black Player" + currentGame.getBlackUsername());
                                 currentGameIndex++;
                             }
                         }else{
@@ -99,8 +99,7 @@ public class Client {
                         GameData requestedGame = serverFacadeObj.observeServerGame(Integer.parseInt(userArgs[1]));
                         if(requestedGame != null){
                             System.out.println("showing game");
-                            printChessGameWhiteTop(requestedGame);
-                            printChessGameBlackTop(requestedGame);
+                            DrawChessBoard.drawChessBoard(out, requestedGame.getChessGame().getBoard());
                         }else{
                             System.out.println("failed to find game");
                         }
@@ -147,11 +146,5 @@ public class Client {
                 quit - close the chess client
                 help - displays the help message to see what options are available
                 """);
-    }
-    public void printChessGameWhiteTop(GameData currentGame){
-
-    }
-    public void printChessGameBlackTop(GameData currentGame){
-
     }
 }
