@@ -1,6 +1,5 @@
 package ui;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -10,7 +9,6 @@ import responserequest.*;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Collection;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -22,6 +20,7 @@ public class ServerFacade {
     }
 
     public ErrorResponce clearServerDataBase()throws URISyntaxException, IOException{
+        // used mainly for testing purposes
         URI registerURL = new URI(serverUrl + "/db");
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("DELETE");
@@ -89,13 +88,13 @@ public class ServerFacade {
             return new Gson().fromJson(responseReader, ResponseAuth.class);
         }
     }
-    public GameCreationResponse createClientGame(AuthData clientAuth, String gameName)
+    public GameCreationResponse createClientGame(String clientAuth, String gameName)
             throws IOException, URISyntaxException {
         URI registerURL = new URI(serverUrl + "/game");
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("POST");
         registerConnection.setDoOutput(true);
-        registerConnection.addRequestProperty("authorization", clientAuth.getAuthToken());
+        registerConnection.addRequestProperty("authorization", clientAuth);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("gameName", gameName);
         try(OutputStream requestBody = registerConnection.getOutputStream()){
@@ -115,13 +114,13 @@ public class ServerFacade {
         }
     }
 
-    public GameListResponse listServerGames(AuthData clientAuth)
+    public GameListResponse listServerGames(String clientAuth)
             throws IOException, URISyntaxException {
         URI registerURL = new URI(serverUrl + "/game");
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("GET");
         registerConnection.setDoOutput(true);
-        registerConnection.addRequestProperty("authorization", clientAuth.getAuthToken());
+        registerConnection.addRequestProperty("authorization", clientAuth);
         registerConnection.connect();
         if(registerConnection.getResponseCode() == HttpURLConnection.HTTP_OK){
             InputStream responseBody = registerConnection.getInputStream();
@@ -137,14 +136,17 @@ public class ServerFacade {
             return new Gson().fromJson(responseReader, GameListResponse.class);
         }
     }
-    public ErrorResponce joinClientToServerGame(AuthData clientAuth, int gameNumber, String playerColor)
+    public ErrorResponce joinClientToServerGame(String clientAuth, int gameNumber, String playerColor)
             throws IOException, URISyntaxException {
+        if(lastReceivedGameList.size() <= gameNumber){
+            return new ErrorResponce("Invalid gameNumber");
+        }
         int gameID = lastReceivedGameList.get(gameNumber).getGameID();
         URI registerURL = new URI(serverUrl + "/game");
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("PUT");
         registerConnection.setDoOutput(true);
-        registerConnection.addRequestProperty("authorization", clientAuth.getAuthToken());
+        registerConnection.addRequestProperty("authorization", clientAuth);
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("playerColor", playerColor.toUpperCase());
         jsonObject.addProperty("gameID", gameID);
@@ -165,7 +167,6 @@ public class ServerFacade {
         }
     }
     public GameData observeServerGame(int gameNumber){
-        // this is the correct code for when list games works
         if(lastReceivedGameList.size() <= gameNumber){
             return null;
         }
@@ -177,13 +178,13 @@ public class ServerFacade {
         }
         return null;
     }
-    public ErrorResponce logoutClient(AuthData clientAuth)
+    public ErrorResponce logoutClient(String clientAuth)
             throws IOException, URISyntaxException {
         URI registerURL = new URI(serverUrl + "/session");
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("DELETE");
         registerConnection.setDoOutput(true);
-        registerConnection.addRequestProperty("authorization", clientAuth.getAuthToken());
+        registerConnection.addRequestProperty("authorization", clientAuth);
         registerConnection.connect();
 
         if(registerConnection.getResponseCode() == HttpURLConnection.HTTP_OK){

@@ -1,7 +1,6 @@
 package ui;
 
 import chess.*;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 
@@ -16,13 +15,13 @@ public class DrawChessBoard {
     private static final String K = " K ";
     private static final String Q = " Q ";
     private static final String P = " P ";
-    // array to hold what pieces are in each position in the row
-    ArrayList<String> chessBoardRowArray = new ArrayList<>();
 
     public static void drawChessBoard(PrintStream out, String playerColor,  ChessBoard chessBoard) {
         boolean spaceIsWhite = true;
         if(playerColor.equals("WHITE")){
             drawWhiteHeader(out);
+            // prints the chess board to the console 1 square at a time the border is handled here and the
+            // pieces are printed by a helper function
             for (int boardRow = BOARD_SIZE_IN_SQUARES; boardRow > 0; --boardRow) {
                 out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
                 out.print(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
@@ -37,6 +36,7 @@ public class DrawChessBoard {
                 out.print(EscapeSequences.RESET_BG_COLOR);
                 out.print("\n");
 
+                // ensures that the spaceIsWhite boolean is correct for starting another row
                 if(boardRow % 2 == 0){
                     spaceIsWhite = false;
                 }else{
@@ -46,6 +46,8 @@ public class DrawChessBoard {
             drawWhiteHeader(out);
         }else{
             drawBlackHeader(out);
+            // prints the chess board to the console 1 square at a time the border is handled here and the
+            // pieces are printed by a helper function
             for (int boardRow = 1; boardRow <= BOARD_SIZE_IN_SQUARES; ++boardRow) {
                 out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
                 out.print(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
@@ -60,6 +62,7 @@ public class DrawChessBoard {
                 out.print(EscapeSequences.RESET_BG_COLOR);
                 out.print("\n");
 
+                // ensures that the spaceIsWhite boolean is correct for starting another row
                 if(boardRow % 2 == 0){
                     spaceIsWhite = true;
                 }else{
@@ -89,7 +92,8 @@ public class DrawChessBoard {
         out.print(EscapeSequences.RESET_BG_COLOR);
         out.print("\n");
     }
-    private static void drawCorrectPiece(PrintStream out, boolean isWhite, ChessPosition piecePosition, ChessBoard currentChessBoard){
+    private static void drawCorrectPiece(PrintStream out, boolean isWhite, ChessPosition piecePosition,
+                                         ChessBoard currentChessBoard){
         if(isWhite){
             out.print(EscapeSequences.SET_BG_COLOR_BLUE);
 
