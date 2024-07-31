@@ -126,7 +126,7 @@ public class ServerFacadeTests {
     }
     @Test
     @DisplayName("create multiple games")
-    public void CreateMultipleGamesTest() throws URISyntaxException, IOException {
+    public void createMultipleGamesTest() throws URISyntaxException, IOException {
         ResponseAuth registerAuthRes1 = serverFacade.registerClient("toad", "toad", "toad");
         Assertions.assertNull(registerAuthRes1.message());
 
@@ -189,60 +189,6 @@ public class ServerFacadeTests {
 
         GameListResponse listResponse = serverFacade.listServerGames(registerAuthRes1.authToken());
         Assertions.assertEquals(0, listResponse.games().size());
-    }
-    @Test
-    @DisplayName("observe game")
-    public void posObserveGameTest() throws URISyntaxException, IOException {
-        ResponseAuth registerAuthRes1 = serverFacade.registerClient("toad", "toad", "toad");
-        Assertions.assertNull(registerAuthRes1.message());
-
-        GameCreationResponse firstGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
-                "firstGame");
-        Assertions.assertNull(firstGameRes.message());
-
-        GameCreationResponse secondGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
-                "secondGame");
-        Assertions.assertNull(secondGameRes.message());
-
-        GameCreationResponse thirdGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
-                "thirdGame");
-        Assertions.assertNull(thirdGameRes.message());
-
-        GameListResponse listResponse = serverFacade.listServerGames(registerAuthRes1.authToken());
-        Assertions.assertNull(listResponse.message());
-
-        GameData gameRes1 = serverFacade.observeServerGame(1);
-        Assertions.assertEquals("secondGame", gameRes1.getGameName());
-
-        GameData gameRes2 = serverFacade.observeServerGame(2);
-        Assertions.assertEquals("thirdGame", gameRes2.getGameName());
-
-        GameData gameRes3 = serverFacade.observeServerGame(0);
-        Assertions.assertEquals("firstGame", gameRes3.getGameName());
-    }
-    @Test
-    @DisplayName("observe game with bad gameNumber")
-    public void badIndexObserverGameTest() throws URISyntaxException, IOException {
-        ResponseAuth registerAuthRes1 = serverFacade.registerClient("toad", "toad", "toad");
-        Assertions.assertNull(registerAuthRes1.message());
-
-        GameCreationResponse firstGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
-                "firstGame");
-        Assertions.assertNull(firstGameRes.message());
-
-        GameCreationResponse secondGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
-                "secondGame");
-        Assertions.assertNull(secondGameRes.message());
-
-        GameCreationResponse thirdGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
-                "thirdGame");
-        Assertions.assertNull(thirdGameRes.message());
-
-        GameListResponse listResponse = serverFacade.listServerGames(registerAuthRes1.authToken());
-        Assertions.assertNull(listResponse.message());
-
-        GameData gameRes1 = serverFacade.observeServerGame(4);
-        Assertions.assertNull(gameRes1);
     }
     @Test
     @DisplayName("join game both players")

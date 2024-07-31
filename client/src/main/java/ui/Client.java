@@ -10,11 +10,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Client {
     ServerFacade serverFacadeObj;
     AuthData validAuthData;
+    private ArrayList<GameData> lastReceivedGameList = new ArrayList<>();
     public Client(String baseURL){
         serverFacadeObj = new ServerFacade(baseURL);
     }
@@ -38,6 +40,7 @@ public class Client {
             // tracked with the isLoggedIn boolean
             if(!isLoggedIn){
                 switch (userArgs[0]) {
+                    // add try catch blocks around each case LOOK HERE
 
                     case "register":
                         // checks to see if the user put in the correct number of args
@@ -106,6 +109,8 @@ public class Client {
                         GameListResponse listResponse = serverFacadeObj.listServerGames(validAuthData.getAuthToken());
                         if(listResponse.message() == null){
                             System.out.println("Game list found");
+                            lastReceivedGameList.clear();
+                            lastReceivedGameList.addAll(listResponse.games());
                             int currentGameIndex = 1;
                             // prints all games returned to the console
                             for(GameData currentGame: listResponse.games()){
@@ -125,10 +130,15 @@ public class Client {
                             System.out.println("invalid number of arguments");
                             break;
                         }
+                        if(lastReceivedGameList.size() <= Integer.parseInt(userArgs[1])-1){
+                            System.out.println("Invalid gameNumber");
+                            break;
+                        }
+                        int joinGameID = lastReceivedGameList.get(Integer.parseInt(userArgs[1])-1).getGameID();
                         // joins the client to the chosen game, the games start at 1, but the game list is 0 indexed
                         // making it necessary to have userArgs[1] - 1
                         ErrorResponce joinResponse = serverFacadeObj.joinClientToServerGame(
-                                validAuthData.getAuthToken(), Integer.parseInt(userArgs[1])-1, userArgs[2]);
+                                validAuthData.getAuthToken(), joinGameID, userArgs[2]);
                         if(joinResponse.message() == null){
                             System.out.println("Joined game");
                         }else{
@@ -141,19 +151,31 @@ public class Client {
                             System.out.println("invalid number of arguments");
                             break;
                         }
+                        if(lastReceivedGameList.size() <= Integer.parseInt(userArgs[1])-1){
+                            System.out.println("Invalid gameNumber");
+                            break;
+                        }
+                        // finds and prints the desired game to the console unless the game does not exist
                         // prints the chosen game to the console, the games start at 1,
-                        // but the game list is 0 indexed making it necessary to have userArgs[1] - 1
-                        GameData requestedGame = serverFacadeObj.observeServerGame(
-                                Integer.parseInt(userArgs[1])-1);
+                        int gameID = lastReceivedGameList.get(Integer.parseInt(userArgs[1])-1).getGameID();
+                        boolean foundGame = false;
+                        GameData desiredGame = null;
+                        for(GameData currentGame: lastReceivedGameList){
+                            if(currentGame.getGameID() == gameID){
+                                foundGame = true;
+                                desiredGame = currentGame;
+                                break;
+                            }
+                        }
                         // if the game exists print the game
-                        if(requestedGame != null){
+                        if(foundGame){
                             System.out.println("showing game");
                             DrawChessBoard.drawChessBoard(out, "WHITE",
-                                    requestedGame.getChessGame().getBoard());
+                                    desiredGame.getChessGame().getBoard());
                             System.out.print(EscapeSequences.RESET_BG_COLOR);
                             System.out.print("\n\n");
                             DrawChessBoard.drawChessBoard(out, "BLACK",
-                                    requestedGame.getChessGame().getBoard());
+                                    desiredGame.getChessGame().getBoard());
                             System.out.print(EscapeSequences.RESET_BG_COLOR);
                             System.out.print("\n");
                         }else{

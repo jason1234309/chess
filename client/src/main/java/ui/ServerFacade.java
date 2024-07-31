@@ -12,7 +12,6 @@ import java.util.ArrayList;
 
 public class ServerFacade {
     private final String serverUrl;
-    private ArrayList<GameData> lastReceivedGameList = new ArrayList<>();
 
 
     public ServerFacade(String url) {
@@ -127,8 +126,6 @@ public class ServerFacade {
             InputStreamReader responseReader = new InputStreamReader(responseBody);
             Gson serializer = new GsonBuilder().enableComplexMapKeySerialization().create();
             GameListResponse gameListResponse = serializer.fromJson(responseReader, GameListResponse.class);
-            lastReceivedGameList.clear();
-            lastReceivedGameList.addAll(gameListResponse.games());
             return gameListResponse;
         }else{
             InputStream responseBody = registerConnection.getErrorStream();
@@ -136,12 +133,8 @@ public class ServerFacade {
             return new Gson().fromJson(responseReader, GameListResponse.class);
         }
     }
-    public ErrorResponce joinClientToServerGame(String clientAuth, int gameNumber, String playerColor)
+    public ErrorResponce joinClientToServerGame(String clientAuth, int gameID, String playerColor)
             throws IOException, URISyntaxException {
-        if(lastReceivedGameList.size() <= gameNumber){
-            return new ErrorResponce("Invalid gameNumber");
-        }
-        int gameID = lastReceivedGameList.get(gameNumber).getGameID();
         URI registerURL = new URI(serverUrl + "/game");
         HttpURLConnection registerConnection = (HttpURLConnection) registerURL.toURL().openConnection();
         registerConnection.setRequestMethod("PUT");
@@ -165,18 +158,6 @@ public class ServerFacade {
             InputStreamReader responseReader = new InputStreamReader(responseBody);
             return new Gson().fromJson(responseReader, ErrorResponce.class);
         }
-    }
-    public GameData observeServerGame(int gameNumber){
-        if(lastReceivedGameList.size() <= gameNumber){
-            return null;
-        }
-        int gameID = lastReceivedGameList.get(gameNumber).getGameID();
-        for(GameData currentGame: lastReceivedGameList){
-            if(currentGame.getGameID() == gameID){
-                return currentGame;
-            }
-        }
-        return null;
     }
     public ErrorResponce logoutClient(String clientAuth)
             throws IOException, URISyntaxException {
