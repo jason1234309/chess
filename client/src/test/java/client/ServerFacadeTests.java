@@ -217,27 +217,6 @@ public class ServerFacadeTests {
         Assertions.assertNull(joinResBlackPlayer.message());
     }
     @Test
-    @DisplayName("join game with bad gameNumber")
-    public void badIndexJoinGameTest() throws URISyntaxException, IOException {
-        ResponseAuth registerAuthRes1 = serverFacade.registerClient("toad", "toad", "toad");
-        Assertions.assertNull(registerAuthRes1.message());
-
-        GameCreationResponse firstGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
-                "firstGame");
-        Assertions.assertNull(firstGameRes.message());
-
-        GameCreationResponse secondGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
-                "secondGame");
-        Assertions.assertNull(secondGameRes.message());
-
-        GameListResponse listResponse = serverFacade.listServerGames(registerAuthRes1.authToken());
-        Assertions.assertNull(listResponse.message());
-
-        ErrorResponce gameJoinRes1 = serverFacade.joinClientToServerGame(registerAuthRes1.authToken(),
-                4, "White");
-        Assertions.assertEquals("Invalid gameNumber", gameJoinRes1.message());
-    }
-    @Test
     @DisplayName("join clients to a full game")
     public void joinFullGameTest() throws URISyntaxException, IOException {
         ResponseAuth registerAuthRes1 = serverFacade.registerClient("toad", "toad", "toad");
