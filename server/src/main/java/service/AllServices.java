@@ -164,6 +164,9 @@ public class AllServices {
         try{
             AuthData fullUserAuth = authDAOObj.getAuth(userAuth.getAuthToken());
             GameData currentGame = gameDAOObj.getGame(gameId);
+            if(currentGame == null){
+                return new ErrorResponce("Error: unauthorized");
+            }
             // if the game object exists, then the current game is checked to see
             // if the provided player color is null and can be added to the current game.
             // if the current teamcolor is taken throws

@@ -3,12 +3,10 @@ package ui;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import model.*;
 import responserequest.*;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 
 public class ServerFacade {
     private final String serverUrl;
@@ -125,8 +123,7 @@ public class ServerFacade {
             InputStream responseBody = registerConnection.getInputStream();
             InputStreamReader responseReader = new InputStreamReader(responseBody);
             Gson serializer = new GsonBuilder().enableComplexMapKeySerialization().create();
-            GameListResponse gameListResponse = serializer.fromJson(responseReader, GameListResponse.class);
-            return gameListResponse;
+            return serializer.fromJson(responseReader, GameListResponse.class);
         }else{
             InputStream responseBody = registerConnection.getErrorStream();
             InputStreamReader responseReader = new InputStreamReader(responseBody);

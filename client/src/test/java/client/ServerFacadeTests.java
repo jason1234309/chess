@@ -205,15 +205,12 @@ public class ServerFacadeTests {
                 "firstGame");
         Assertions.assertNull(firstGameRes.message());
 
-        GameListResponse listResponse = serverFacade.listServerGames(registerAuthRes1.authToken());
-        Assertions.assertNull(listResponse.message());
-
         ErrorResponce joinResWhitePlayer = serverFacade.joinClientToServerGame(registerAuthRes1.authToken(),
-                0, "white");
+                1, "white");
         Assertions.assertNull(joinResWhitePlayer.message());
 
         ErrorResponce joinResBlackPlayer = serverFacade.joinClientToServerGame(registerAuthRes2.authToken(),
-                0, "black");
+                1, "black");
         Assertions.assertNull(joinResBlackPlayer.message());
     }
     @Test
@@ -229,23 +226,20 @@ public class ServerFacadeTests {
                 "firstGame");
         Assertions.assertNull(firstGameRes.message());
 
-        GameListResponse listResponse = serverFacade.listServerGames(registerAuthRes1.authToken());
-        Assertions.assertNull(listResponse.message());
-
-        ErrorResponce gameJoinRes1 = serverFacade.joinClientToServerGame(registerAuthRes1.authToken(),
-                0, "White");
+       ErrorResponce gameJoinRes1 = serverFacade.joinClientToServerGame(registerAuthRes1.authToken(),
+                1, "White");
         Assertions.assertNull(gameJoinRes1.message());
 
         ErrorResponce gameJoinRes2 = serverFacade.joinClientToServerGame(registerAuthRes1.authToken(),
-                0, "White");
+                1, "White");
         Assertions.assertEquals("Error: already taken", gameJoinRes2.message());
 
         ErrorResponce gameJoinRes3 = serverFacade.joinClientToServerGame(registerAuthRes2.authToken(),
-                0, "black");
+                1, "black");
         Assertions.assertNull(gameJoinRes3.message());
 
         ErrorResponce gameJoinRes4 = serverFacade.joinClientToServerGame(registerAuthRes2.authToken(),
-                0, "black");
+                1, "black");
         Assertions.assertEquals("Error: already taken", gameJoinRes4.message());
     }
     @Test
