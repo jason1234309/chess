@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class Client {
@@ -31,6 +32,9 @@ public class Client {
         boolean isLoggedIn = false;
         boolean isInGame = false;
         boolean isExitProgram = false;
+        boolean hasLostGame = false;
+        String playerColor = "";
+        GameData currentJoinGame = null;
         // the main loop that receives user input and calls appropriate helper functions
         while(true){
             // get the user input
@@ -162,6 +166,10 @@ public class Client {
                                         validAuthData.getAuthToken(), joinGameID, userArgs[2]);
                                 if(joinResponse.message() == null){
                                     System.out.println("Joined game");
+                                    currentJoinGame = lastReceivedGameList.get(Integer.parseInt(userArgs[1])-1);
+                                    playerColor = userArgs[2].toUpperCase();
+                                    isInGame = true;
+                                    hasLostGame = false;
                                 }else{
                                     System.out.println("failed to join game\n" + joinResponse.message());
                                 }
@@ -204,6 +212,10 @@ public class Client {
                                             desiredGame.getChessGame().getBoard());
                                     System.out.print(EscapeSequences.RESET_BG_COLOR);
                                     System.out.print("\n");
+                                    currentJoinGame = desiredGame;
+                                    playerColor = "";
+                                    isInGame = true;
+                                    hasLostGame = false;
                                 }else{
                                     System.out.println("failed to find game");
                                 }
@@ -241,20 +253,65 @@ public class Client {
                                     System.out.println("invalid number of arguments");
                                     break;
                                 }
-
+                                if(playerColor.equals("")){
+                                    System.out.println("You are observing the game, you can not make a move");
+                                    break;
+                                }
+                                if(hasLostGame){
+                                    System.out.println("You have lost, you can not make a move");
+                                    break;
+                                }
                                 break;
                             }catch(Exception ex){
                                 System.out.println("invalid arguments types");
                                 break;
                             }
                         case "redrawBoard":
+                            if(playerColor.equals("BLACK")){
+                                System.out.println("redrawing game");
+                                DrawChessBoard.drawChessBoard(out, "BLACK",
+                                        currentJoinGame.getChessGame().getBoard());
+                                System.out.print(EscapeSequences.RESET_BG_COLOR);
+                                System.out.print("\n");
+                            }else{
+                                System.out.println("redrawing game");
+                                DrawChessBoard.drawChessBoard(out, "WHITE",
+                                        currentJoinGame.getChessGame().getBoard());
+                                System.out.print(EscapeSequences.RESET_BG_COLOR);
+                                System.out.print("\n");
+                            }
                             break;
                         case "legalMoves":
+                            // need more logic to find and highlight valid moves
+                            if(playerColor.equals("BLACK")){
+                                System.out.println("redrawing game");
+                                DrawChessBoard.drawChessBoard(out, "BLACK",
+                                        currentJoinGame.getChessGame().getBoard());
+                                System.out.print(EscapeSequences.RESET_BG_COLOR);
+                                System.out.print("\n");
+                            }else{
+                                System.out.println("redrawing game");
+                                DrawChessBoard.drawChessBoard(out, "WHITE",
+                                        currentJoinGame.getChessGame().getBoard());
+                                System.out.print(EscapeSequences.RESET_BG_COLOR);
+                                System.out.print("\n");
+                            }
                             break;
                         case "resign":
+                            System.out.println("are you sure you want to resign? Y ? N");
+                            line = scanner.nextLine();
+                            userArgs = line.split(" ");
+                            if(userArgs[0].equals("Y") | userArgs[0].equals("y")){
+                                System.out.println("resigning from game");
+                                hasLostGame = true;
+                                System.out.println("you have been defeated");
+                                // game over stuff
+
+                            }
                             break;
                         case "leave":
                             isInGame = false;
+                            // need to remove the player from the game, or end the game
                             break;
                         case "help":
                             printGamePlayHelp();
