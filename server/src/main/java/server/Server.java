@@ -9,6 +9,7 @@ import service.AllServices;
 
 public class Server {
     AllServices databaseServiceObj = new AllServices();
+    WebSocketHandler webSocketHandler;
     Gson serializer = new Gson();
 
     // runs all spark functions needed to start and run the server
@@ -16,6 +17,9 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        // WebSocket handler
+        Spark.webSocket("/ws", webSocketHandler);
 
         // the request handlers functions are registered here
         Spark.delete("/db", this::clearApplication);
