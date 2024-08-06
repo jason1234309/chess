@@ -5,37 +5,35 @@ import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    ConcurrentHashMap<Integer, Set<Session>> gameSessionsMap = new ConcurrentHashMap<>();
 
-
-    public void add(String userName, Session session) {
-        var connection = new Connection(userName, session);
-        connections.put(userName, connection);
-    }
-
-    public void remove(String userName) {
-        connections.remove(userName);
-    }
-
-
-    public void broadcast(String excludeVisitorName, ServerMessage notification) throws IOException {
-        var removeList = new ArrayList<Connection>();
-        for (var c : connections.values()) {
-            if (c.session.isOpen()) {
-                if (!c.userName.equals(excludeVisitorName)) {
-                    c.send(notification.toString());
-                }
-            } else {
-                removeList.add(c);
-            }
-        }
-
-        // Clean up any connections that were left open.
-        for (var c : removeList) {
-            connections.remove(c.userName);
+    public void add(Integer gameID, Session session) {
+        if(gameSessionsMap.containsKey(gameID)){
+            gameSessionsMap.get(gameID).add(session);
+        }else{
+            Set<Session> newSessionSet = new HashSet<>();
+            newSessionSet.add(session);
+            gameSessionsMap.put(gameID, newSessionSet);
         }
     }
+
+    public void remove(Integer gameID,Session session) {
+        if(gameSessionsMap.containsKey(gameID)){
+            Set<Session> desiredSet = gameSessionsMap.get(gameID); // can remove after error check
+            if(desiredSet.contains(session)){  // think this is needed for error checking
+                gameSessionsMap.get(gameID).remove(session);
+            } // should add else that prints an error message
+        }
+    }
+    public void broadCast(Integer gameId, Session excludedSession, ServerMessage broadCastMessage){
+
+    }
+
+
+
 }
