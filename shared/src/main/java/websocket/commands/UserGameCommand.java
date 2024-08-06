@@ -12,7 +12,7 @@ public class UserGameCommand {
 
     public UserGameCommand(String authToken) {
         this.authToken = authToken;
-    }
+    }  //   can I add command type to the constructor and add username
 
     public enum CommandType {
         CONNECT,
