@@ -1,10 +1,6 @@
 package server;
 
 import org.eclipse.jetty.websocket.api.Session;
-import websocket.messages.ServerMessage;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,10 +26,7 @@ public class ConnectionManager {
             } // should add else that prints an error message
         }
     }
-    public void broadCast(Integer gameId, Session excludedSession, ServerMessage broadCastMessage){
-
+    public Set<Session> getGameSessions(Integer gameID){
+        return gameSessionsMap.getOrDefault(gameID, null);
     }
-
-
-
 }

@@ -9,8 +9,11 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import responserequest.ErrorResponce;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.Set;
+
 @WebSocket
 public class WebSocketHandler {
     private final ConnectionManager connections = new ConnectionManager();
@@ -50,22 +53,35 @@ public class WebSocketHandler {
 
     }
 
-    private ErrorResponce connectSocketHandler(Session session, UserGameCommand command){
+    private void connectSocketHandler(Session session, UserGameCommand command){
         connections.add(command.getGameID(), session);
-        return new ErrorResponce("not implemented");
+        new ErrorResponce("not implemented");
     }
 
-    private ErrorResponce makeMoveSocketHandler(Session session, UserGameCommand command){
+    private void makeMoveSocketHandler(Session session, UserGameCommand command){
         // need to implement this
-        return new ErrorResponce("not implemented");
     }
 
-    private ErrorResponce leaveSocketHandler(Session session, UserGameCommand command){
+    private void leaveSocketHandler(Session session, UserGameCommand command){
         connections.remove(command.getGameID(), session);
-        return new ErrorResponce("not implemented");
     }
 
-    private ErrorResponce resignSocketHandler(Session session, UserGameCommand command){
-        return new ErrorResponce("not implemented");
+    private void resignSocketHandler(Session session, UserGameCommand command) throws IOException {
+
+    }
+
+    public void sendMessage(Session session, ServerMessage message) throws IOException {
+        session.getRemote().sendString(" ");
+    }
+    public void broadCast(Integer gameId, Session excludedSession, ServerMessage broadCastMessage) throws IOException {
+        Set<Session> currentGameSessionSet = connections.getGameSessions(gameId);
+        if(currentGameSessionSet != null){
+            for( Session currentSession: currentGameSessionSet){
+                if(!currentSession.equals(excludedSession)){
+                    this.sendMessage(currentSession, broadCastMessage);
+                }
+            }
+        }
+
     }
 }
