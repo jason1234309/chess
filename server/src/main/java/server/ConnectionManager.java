@@ -1,5 +1,6 @@
 package server;
 
+import dataaccess.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,12 +19,16 @@ public class ConnectionManager {
         }
     }
 
-    public void remove(Integer gameID,Session session) {
+    public void remove(Integer gameID,Session session) throws DataAccessException {
         if(gameSessionsMap.containsKey(gameID)){
             Set<Session> desiredSet = gameSessionsMap.get(gameID); // can remove after error check
             if(desiredSet.contains(session)){  // think this is needed for error checking
                 gameSessionsMap.get(gameID).remove(session);
-            } // should add else that prints an error message
+            }else{
+                throw new DataAccessException("unauthorized");
+            }
+        }else{
+            throw new DataAccessException("unauthorized");
         }
     }
     public Set<Session> getGameSessions(Integer gameID){
