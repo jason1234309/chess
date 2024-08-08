@@ -18,14 +18,13 @@ public class SqlGameDAO implements GameDAO{
                 "`gameName` varchar(256) NOT NULL," +
                 "`whiteUserName` varchar(256) NULL," +
                 "`blackUserName` varchar(256) NULL," +
-                "`gameHasEnded` varchar(256) NULL" +
                 "`chessGame` varchar(4096) not NULL, " +
                 "PRIMARY KEY (`id`)) ";
         // creates a connection to the database and creates the game table if it doesn't exist
         try (var conn = DatabaseManager.getConnection()) {
-                try (var preparedStatement = conn.prepareStatement(createTableStatement)) {
-                    preparedStatement.executeUpdate();
-                }
+            try (var preparedStatement = conn.prepareStatement(createTableStatement)) {
+                preparedStatement.executeUpdate();
+            }
         } catch (SQLException ex) {
             throw new DataAccessException(String.format("Unable to configure database: %s",
                     ex.getMessage()));
@@ -88,16 +87,15 @@ public class SqlGameDAO implements GameDAO{
         // connects to the database and inserts a new game into the game table
         // and returns auto generated game id
         ChessGame chessGameObj = new ChessGame();
-        var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, gameHasEnded, chessGame) " +
-                "VALUES (?,?,?,?,?)";
+        var insertStatement = "INSERT INTO game (gameName, whiteUserName, BlackUserName, chessGame) " +
+                "VALUES (?,?,?,?)";
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement(insertStatement,
                     Statement.RETURN_GENERATED_KEYS)){
                 preparedStatement.setString(1, gameName);
                 preparedStatement.setString(2, null);
                 preparedStatement.setString(3, null);
-                preparedStatement.setString(4, "FALSE");
-                preparedStatement.setString(5, gameToJson(chessGameObj));
+                preparedStatement.setString(4, gameToJson(chessGameObj));
                 preparedStatement.executeUpdate();
                 var resultSet = preparedStatement.getGeneratedKeys();
                 if(resultSet.next()){
@@ -124,12 +122,10 @@ public class SqlGameDAO implements GameDAO{
                         String returnedGameName = resultSet.getString("gameName");
                         String returnedWhiteUserName = resultSet.getString("whiteUserName");
                         String returnedBlackUserName = resultSet.getString("blackUserName");
-                        String returnedGameHasEnded = resultSet.getString("gameHasEnded");
                         ChessGame returnedChessGame =
                                 jsonToGame(resultSet.getString("chessGame"));
-                        boolean convertedGameHasEnded = !returnedGameHasEnded.equals("FALSE");
                         return new GameData(returnedGameId, returnedGameName,
-                                returnedWhiteUserName, returnedBlackUserName, convertedGameHasEnded, returnedChessGame);
+                                returnedWhiteUserName, returnedBlackUserName, returnedChessGame);
                     }
                 }
             }
@@ -153,12 +149,10 @@ public class SqlGameDAO implements GameDAO{
                         String returnedGameName = resultSet.getString("gameName");
                         String returnedWhiteUserName = resultSet.getString("whiteUserName");
                         String returnedBlackUserName = resultSet.getString("blackUserName");
-                        String returnedGameHasEnded = resultSet.getString("gameHasEnded");
                         ChessGame returnedChessGame =
                                 jsonToGame(resultSet.getString("chessGame"));
-                        boolean convertedGameHasEnded = !returnedGameHasEnded.equals("FALSE");
                         gameList.add(new GameData(returnedGameId, returnedGameName,
-                                returnedWhiteUserName, returnedBlackUserName, convertedGameHasEnded, returnedChessGame));
+                                returnedWhiteUserName, returnedBlackUserName, returnedChessGame));
                     }
                 }
             }
@@ -178,22 +172,15 @@ public class SqlGameDAO implements GameDAO{
         }
         // connects to the database and updates the values in the game row queried above
         // with the values provided
-        String stringGameHasEnded;
-        if(!updatedGameObject.getGameHasEnded()){
-            stringGameHasEnded = "FALSE";
-        }else{
-            stringGameHasEnded = "TRUE";
-        }
         var updateStatement = "UPDATE game SET gameName=?, whiteUserName=?, " +
-                "blackUserName=?, gameHasEnded=? chessGame=? where id=?";  //
+                "blackUserName=?, chessGame=? where id=?";  //
         try(var conn = DatabaseManager.getConnection()){
             try(var preparedStatement = conn.prepareStatement(updateStatement)){
                 preparedStatement.setString(1, updatedGameObject.getGameName());
                 preparedStatement.setString(2, updatedGameObject.getWhiteUsername());
                 preparedStatement.setString(3, updatedGameObject.getBlackUsername());
-                preparedStatement.setString(4, stringGameHasEnded);
-                preparedStatement.setString(5, gameToJson(updatedGameObject.getChessGame()));  // not implemented
-                preparedStatement.setInt(6, gameID);
+                preparedStatement.setString(4, gameToJson(updatedGameObject.getChessGame()));  // not implemented
+                preparedStatement.setInt(5, gameID);
                 preparedStatement.executeUpdate();
             }
         }catch(DataAccessException | SQLException ex){

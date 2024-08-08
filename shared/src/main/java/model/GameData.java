@@ -7,7 +7,6 @@ public class GameData {
     String whiteUsername;
     String blackUsername;
     String gameName;
-    Boolean gameHasEnded;
     chess.ChessGame chessGame;
 
     public GameData(int gameID, String gameName, String whiteUsername, String blackUsername,
@@ -17,16 +16,6 @@ public class GameData {
         this.blackUsername = blackUsername;
         this.gameName = gameName;
         this.chessGame = chessGame;
-        this.gameHasEnded = false;
-    }
-    public GameData(int gameID, String gameName, String whiteUsername, String blackUsername, Boolean gameHasEnded,
-                    chess.ChessGame chessGame) {
-        this.gameID = gameID;
-        this.whiteUsername = whiteUsername;
-        this.blackUsername = blackUsername;
-        this.gameName = gameName;
-        this.chessGame = chessGame;
-        this.gameHasEnded = gameHasEnded;
     }
 
     public int getGameID() {
@@ -48,10 +37,6 @@ public class GameData {
     public void setBlackUsername(String blackUsername) {
         this.blackUsername = blackUsername;
     }
-
-    public void setGameHasEnded(Boolean hasEnded){this.gameHasEnded = hasEnded;}
-
-    public Boolean getGameHasEnded(){return gameHasEnded;}
 
     public String getGameName() {
         return gameName;

@@ -12,7 +12,6 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import responserequest.ErrorResponce;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorServerMessage;
@@ -52,13 +51,15 @@ public class WebSocketHandler {
             }
             switch (command.getCommandType()) {
                 case CONNECT -> connectSocketHandler(session, command);
-                case MAKE_MOVE -> makeMoveSocketHandler(session, moveCommand);
+                case MAKE_MOVE -> {
+                    assert moveCommand != null;
+                    makeMoveSocketHandler(session, moveCommand);
+                }
                 case LEAVE -> leaveSocketHandler(session, command);
                 case RESIGN -> resignSocketHandler(session, command);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            //sendMessage(session.getRemote(), new ErrorMessage("Error: " + ex.getMessage()));
         }
 
     }
@@ -101,6 +102,9 @@ public class WebSocketHandler {
                 AuthData sessionAuth = sqlAuthObj.getAuth(command.getAuthToken());
                 if(sqlGameObj.getGame(command.getGameID()) != null){
                     GameData currentGame = sqlGameObj.getGame(command.getGameID());
+                    if(currentGame.getChessGame().isGameHasEnded()){
+                        throw new DataAccessException("the game has ended, no moves can be made");
+                    }
                     if(currentGame.getWhiteUsername().equals(sessionAuth.getUsername())){
                         // Check white player move
                         if(currentGame.getChessGame().getTeamTurn() != ChessGame.TeamColor.WHITE){
@@ -124,7 +128,7 @@ public class WebSocketHandler {
                                     ServerMessage.ServerMessageType.LOAD_GAME,currentGame.getChessGame()));
 
                             if(currentGame.getChessGame().isInCheckmate(ChessGame.TeamColor.BLACK)){
-                                currentGame.setGameHasEnded(true);
+                                currentGame.getChessGame().setGameHasEnded(true);
                                 this.broadCast(command.getGameID(), null, new NotificationServerMessage(
                                         ServerMessage.ServerMessageType.NOTIFICATION,
                                         sessionAuth.getUsername() + " the black player is in checkmate"));
@@ -136,7 +140,7 @@ public class WebSocketHandler {
                                         sessionAuth.getUsername() + " the black player is in check"));
 
                             }else if(currentGame.getChessGame().isInStalemate(ChessGame.TeamColor.BLACK)){
-                                currentGame.setGameHasEnded(true);
+                                currentGame.getChessGame().setGameHasEnded(true);
                                 this.broadCast(command.getGameID(), null, new NotificationServerMessage(
                                         ServerMessage.ServerMessageType.NOTIFICATION,
                                         sessionAuth.getUsername() + " the game ends in stalemate"));
@@ -163,13 +167,13 @@ public class WebSocketHandler {
 
                             this.broadCast(command.getGameID(), session,new NotificationServerMessage(
                                     ServerMessage.ServerMessageType.NOTIFICATION,
-                                    sessionAuth.getUsername() + " the white player make a move"));
+                                    sessionAuth.getUsername() + " the black player make a move"));
 
                             this.broadCast(command.getGameID(), null, new LoadGameServerMessage(
                                     ServerMessage.ServerMessageType.LOAD_GAME,currentGame.getChessGame()));
 
                             if(currentGame.getChessGame().isInCheckmate(ChessGame.TeamColor.WHITE)){
-                                currentGame.setGameHasEnded(true);
+                                currentGame.getChessGame().setGameHasEnded(true);
                                 this.broadCast(command.getGameID(), null, new NotificationServerMessage(
                                         ServerMessage.ServerMessageType.NOTIFICATION,
                                         sessionAuth.getUsername() + " the white player is in checkmate"));
@@ -181,7 +185,7 @@ public class WebSocketHandler {
                                         sessionAuth.getUsername() + " the white player is in check"));
 
                             }else if(currentGame.getChessGame().isInStalemate(ChessGame.TeamColor.WHITE)){
-                                currentGame.setGameHasEnded(true);
+                                currentGame.getChessGame().setGameHasEnded(true);
                                 this.broadCast(command.getGameID(), null, new NotificationServerMessage(
                                         ServerMessage.ServerMessageType.NOTIFICATION,
                                         sessionAuth.getUsername() + " the game ends in stalemate"));
@@ -248,14 +252,14 @@ public class WebSocketHandler {
                 if(sqlGameObj.getGame(command.getGameID()) != null){
                     GameData currentGame = sqlGameObj.getGame(command.getGameID());
                     if(currentGame.getWhiteUsername().equals(sessionAuth.getUsername())){
-                        currentGame.setGameHasEnded(true);
+                        currentGame.getChessGame().setGameHasEnded(true);
                         sqlGameObj.updateGame(command.getGameID(), currentGame);
                         this.broadCast(command.getGameID(), null, new NotificationServerMessage(
                                 ServerMessage.ServerMessageType.NOTIFICATION,
                                 sessionAuth.getUsername() + " the white player resigned"));
 
                     }else if(currentGame.getBlackUsername().equals(sessionAuth.getUsername())){
-                        currentGame.setGameHasEnded(true);
+                        currentGame.getChessGame().setGameHasEnded(true);
                         sqlGameObj.updateGame(command.getGameID(), currentGame);
                         this.broadCast(command.getGameID(), null, new NotificationServerMessage(
                                 ServerMessage.ServerMessageType.NOTIFICATION,
