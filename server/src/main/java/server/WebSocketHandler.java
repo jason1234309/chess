@@ -1,14 +1,23 @@
 package server;
 
+import chess.ChessGame;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import dataaccess.DataAccessException;
 import dataaccess.SqlAuthDAO;
 import dataaccess.SqlGameDAO;
+import model.AuthData;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import responserequest.ErrorResponce;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorServerMessage;
+import websocket.messages.LoadGameServerMessage;
+import websocket.messages.NotificationServerMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -35,14 +44,15 @@ public class WebSocketHandler {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
+        MakeMoveCommand moveCommand = null;
         try {
             UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
             if(command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE){
-                // desirilze to a make move command
+                moveCommand = new Gson().fromJson(message, MakeMoveCommand.class);
             }
             switch (command.getCommandType()) {
                 case CONNECT -> connectSocketHandler(session, command);
-                case MAKE_MOVE -> makeMoveSocketHandler(session, command);
+                case MAKE_MOVE -> makeMoveSocketHandler(session, moveCommand);
                 case LEAVE -> leaveSocketHandler(session, command);
                 case RESIGN -> resignSocketHandler(session, command);
             }
@@ -53,25 +63,221 @@ public class WebSocketHandler {
 
     }
 
-    private void connectSocketHandler(Session session, UserGameCommand command){
-        connections.add(command.getGameID(), session);
-        new ErrorResponce("not implemented");
+    private void connectSocketHandler(Session session, UserGameCommand command) throws IOException {
+        try{
+            if(sqlAuthObj.getAuth(command.getAuthToken()) != null){
+                AuthData sessionAuth = sqlAuthObj.getAuth(command.getAuthToken());
+                if(sqlGameObj.getGame(command.getGameID()) != null){
+                    connections.add(command.getGameID(), session);
+                    this.sendMessage(session,  new LoadGameServerMessage(ServerMessage.ServerMessageType.LOAD_GAME,
+                            sqlGameObj.getGame(command.getGameID()).getChessGame()));
+                    if(sqlGameObj.getGame(command.getGameID()).getWhiteUsername().equals(sessionAuth.getUsername())){
+                        this.broadCast(command.getGameID(), session, new NotificationServerMessage(
+                                ServerMessage.ServerMessageType.NOTIFICATION,
+                                sessionAuth.getUsername() + " the white player joined the game"));
+                    }else if(sqlGameObj.getGame(command.getGameID()).getBlackUsername().equals(sessionAuth.getUsername())){
+                        this.broadCast(command.getGameID(), session, new NotificationServerMessage(
+                                ServerMessage.ServerMessageType.NOTIFICATION,
+                                sessionAuth.getUsername() + " the black player joined the game"));
+                    }else{
+                        this.broadCast(command.getGameID(), session, new NotificationServerMessage(
+                                ServerMessage.ServerMessageType.NOTIFICATION,"Observer " +
+                                sessionAuth.getUsername() + " joined the game"));
+                    }
+                }else{
+                    throw new DataAccessException("unauthorized");
+                }
+            }else{
+                throw new DataAccessException("unauthorized");
+            }
+        }catch( DataAccessException | IOException ex){
+            this.sendMessage(session, new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+        }
     }
 
-    private void makeMoveSocketHandler(Session session, UserGameCommand command){
-        // need to implement this
+    private void makeMoveSocketHandler(Session session, MakeMoveCommand command) throws IOException {
+        try{
+            if(sqlAuthObj.getAuth(command.getAuthToken()) != null){
+                AuthData sessionAuth = sqlAuthObj.getAuth(command.getAuthToken());
+                if(sqlGameObj.getGame(command.getGameID()) != null){
+                    GameData currentGame = sqlGameObj.getGame(command.getGameID());
+                    if(currentGame.getWhiteUsername().equals(sessionAuth.getUsername())){
+                        // Check white player move
+                        if(currentGame.getChessGame().getTeamTurn() != ChessGame.TeamColor.WHITE){
+                            throw new DataAccessException("It is not your turn");
+                        }
+                        try{
+                            if(currentGame.getChessGame().validMoves(command.getChessMove().getStartPosition()) == null){
+                                throw new DataAccessException("that move is invalid");
+                            }
+                            if(!currentGame.getChessGame().validMoves(command.getChessMove().
+                                    getStartPosition()).contains(command.getChessMove())){
+                                throw new DataAccessException("that move is invalid");
+                            }
+                            currentGame.getChessGame().makeMove(command.getChessMove());
+
+                            this.broadCast(command.getGameID(), session,new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,
+                                    sessionAuth.getUsername() + " the white player make a move"));
+
+                            this.broadCast(command.getGameID(), null, new LoadGameServerMessage(
+                                    ServerMessage.ServerMessageType.LOAD_GAME,currentGame.getChessGame()));
+
+                            if(currentGame.getChessGame().isInCheckmate(ChessGame.TeamColor.BLACK)){
+                                currentGame.setGameHasEnded(true);
+                                this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                        ServerMessage.ServerMessageType.NOTIFICATION,
+                                        sessionAuth.getUsername() + " the black player is in checkmate"));
+
+                            }else if(currentGame.getChessGame().isInCheck(ChessGame.TeamColor.BLACK)){
+
+                                this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                        ServerMessage.ServerMessageType.NOTIFICATION,
+                                        sessionAuth.getUsername() + " the black player is in check"));
+
+                            }else if(currentGame.getChessGame().isInStalemate(ChessGame.TeamColor.BLACK)){
+                                currentGame.setGameHasEnded(true);
+                                this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                        ServerMessage.ServerMessageType.NOTIFICATION,
+                                        sessionAuth.getUsername() + " the game ends in stalemate"));
+
+                            }
+                            sqlGameObj.updateGame(command.getGameID(), currentGame);
+                        }catch(InvalidMoveException ex){
+                            throw new DataAccessException(ex.getMessage());
+                        }
+                    }else if(currentGame.getBlackUsername().equals(sessionAuth.getUsername())){
+                        // check black player move
+                        if(currentGame.getChessGame().getTeamTurn() != ChessGame.TeamColor.BLACK){
+                            throw new DataAccessException("It is not your turn");
+                        }
+                        try{
+                            if(currentGame.getChessGame().validMoves(command.getChessMove().getStartPosition()) == null){
+                                throw new DataAccessException("that move is invalid");
+                            }
+                            if(!currentGame.getChessGame().validMoves(command.getChessMove().
+                                    getStartPosition()).contains(command.getChessMove())){
+                                throw new DataAccessException("that move is invalid");
+                            }
+                            currentGame.getChessGame().makeMove(command.getChessMove());
+
+                            this.broadCast(command.getGameID(), session,new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,
+                                    sessionAuth.getUsername() + " the white player make a move"));
+
+                            this.broadCast(command.getGameID(), null, new LoadGameServerMessage(
+                                    ServerMessage.ServerMessageType.LOAD_GAME,currentGame.getChessGame()));
+
+                            if(currentGame.getChessGame().isInCheckmate(ChessGame.TeamColor.WHITE)){
+                                currentGame.setGameHasEnded(true);
+                                this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                        ServerMessage.ServerMessageType.NOTIFICATION,
+                                        sessionAuth.getUsername() + " the white player is in checkmate"));
+
+                            }else if(currentGame.getChessGame().isInCheck(ChessGame.TeamColor.WHITE)){
+
+                                this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                        ServerMessage.ServerMessageType.NOTIFICATION,
+                                        sessionAuth.getUsername() + " the white player is in check"));
+
+                            }else if(currentGame.getChessGame().isInStalemate(ChessGame.TeamColor.WHITE)){
+                                currentGame.setGameHasEnded(true);
+                                this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                        ServerMessage.ServerMessageType.NOTIFICATION,
+                                        sessionAuth.getUsername() + " the game ends in stalemate"));
+
+                            }
+                            sqlGameObj.updateGame(command.getGameID(), currentGame);
+                        }catch(InvalidMoveException ex){
+                            throw new DataAccessException(ex.getMessage());
+                        }
+
+                    }else{
+                        throw new DataAccessException("You are not a player in this game");
+                    }
+                }else{
+                    throw new DataAccessException("unauthorized");
+                }
+            }else{
+                throw new DataAccessException("unauthorized");
+            }
+        }catch( DataAccessException ex){
+            this.sendMessage(session, new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+        }
     }
 
-    private void leaveSocketHandler(Session session, UserGameCommand command){
-        connections.remove(command.getGameID(), session);
+    private void leaveSocketHandler(Session session, UserGameCommand command) throws IOException {
+        try{
+            if(sqlAuthObj.getAuth(command.getAuthToken()) != null){
+                AuthData sessionAuth = sqlAuthObj.getAuth(command.getAuthToken());
+                if(sqlGameObj.getGame(command.getGameID()) != null){
+                    connections.remove(command.getGameID(), session);
+                    GameData currentGame = sqlGameObj.getGame(command.getGameID());
+                    if(sqlGameObj.getGame(command.getGameID()).getWhiteUsername().equals(sessionAuth.getUsername())){
+                        currentGame.setWhiteUsername(null);
+                        sqlGameObj.updateGame(command.getGameID(), currentGame);
+                        this.broadCast(command.getGameID(), session,new NotificationServerMessage(
+                                ServerMessage.ServerMessageType.NOTIFICATION,
+                                sessionAuth.getUsername() + " the white player left the game"));
+                    }else if(sqlGameObj.getGame(command.getGameID()).getBlackUsername().equals(sessionAuth.getUsername())){
+                        currentGame.setBlackUsername(null);
+                        sqlGameObj.updateGame(command.getGameID(), currentGame);
+                        this.broadCast(command.getGameID(), session,new NotificationServerMessage(
+                                ServerMessage.ServerMessageType.NOTIFICATION,
+                                sessionAuth.getUsername() + " the black player left the game"));
+                    }else{
+                        this.broadCast(command.getGameID(), session,new NotificationServerMessage(
+                                ServerMessage.ServerMessageType.NOTIFICATION,"Observer" +
+                                sessionAuth.getUsername() + " left the game"));
+                    }
+                }else{
+                    throw new DataAccessException("unauthorized");
+                }
+            }else{
+                throw new DataAccessException("unauthorized");
+            }
+        }catch( DataAccessException | IOException ex){
+            this.sendMessage(session, new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+        }
     }
 
     private void resignSocketHandler(Session session, UserGameCommand command) throws IOException {
+        try{
+            if(sqlAuthObj.getAuth(command.getAuthToken()) != null){
+                AuthData sessionAuth = sqlAuthObj.getAuth(command.getAuthToken());
+                if(sqlGameObj.getGame(command.getGameID()) != null){
+                    GameData currentGame = sqlGameObj.getGame(command.getGameID());
+                    if(currentGame.getWhiteUsername().equals(sessionAuth.getUsername())){
+                        currentGame.setGameHasEnded(true);
+                        sqlGameObj.updateGame(command.getGameID(), currentGame);
+                        this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                ServerMessage.ServerMessageType.NOTIFICATION,
+                                sessionAuth.getUsername() + " the white player resigned"));
 
+                    }else if(currentGame.getBlackUsername().equals(sessionAuth.getUsername())){
+                        currentGame.setGameHasEnded(true);
+                        sqlGameObj.updateGame(command.getGameID(), currentGame);
+                        this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                ServerMessage.ServerMessageType.NOTIFICATION,
+                                sessionAuth.getUsername() + " the black player resigned"));
+                    }else{
+                        throw new DataAccessException("You are not a player in this game");
+                    }
+
+                }else{
+                    throw new DataAccessException("unauthorized");
+                }
+            }else{
+                throw new DataAccessException("unauthorized");
+            }
+        }catch( DataAccessException ex){
+            this.sendMessage(session, new ErrorServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+        }
     }
 
     public void sendMessage(Session session, ServerMessage message) throws IOException {
-        session.getRemote().sendString(" ");
+        Gson serializer = new GsonBuilder().enableComplexMapKeySerialization().create();
+        session.getRemote().sendString(serializer.toJson(message));
     }
     public void broadCast(Integer gameId, Session excludedSession, ServerMessage broadCastMessage) throws IOException {
         Set<Session> currentGameSessionSet = connections.getGameSessions(gameId);

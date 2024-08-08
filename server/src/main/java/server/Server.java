@@ -9,7 +9,7 @@ import service.AllServices;
 
 public class Server {
     AllServices databaseServiceObj = new AllServices();
-    WebSocketHandler webSocketHandler;
+    WebSocketHandler webSocketHandler = new WebSocketHandler();
     Gson serializer = new Gson();
 
     // runs all spark functions needed to start and run the server

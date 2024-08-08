@@ -13,9 +13,11 @@ import java.util.Objects;
 public class ChessGame {
     TeamColor currentTeamTurn = TeamColor.WHITE;
     ChessBoard currentChessBoard = new ChessBoard();
+    boolean gameHasEnded;
 
     public ChessGame() {
         currentChessBoard.resetBoard();
+        gameHasEnded = false;
     }
 
     /**
@@ -32,6 +34,14 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         currentTeamTurn = team;
+    }
+
+    public boolean isGameHasEnded() {
+        return gameHasEnded;
+    }
+
+    public void setGameHasEnded(boolean gameHasEnded) {
+        this.gameHasEnded = gameHasEnded;
     }
 
     /**
