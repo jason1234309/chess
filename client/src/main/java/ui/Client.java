@@ -1,5 +1,7 @@
 package ui;
 
+import chess.ChessMove;
+import chess.ChessPosition;
 import model.AuthData;
 import model.GameData;
 import responserequest.ErrorResponce;
@@ -10,9 +12,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 
 public class Client {
     ServerFacade serverFacadeObj;
@@ -169,7 +169,6 @@ public class Client {
                                     currentJoinGame = lastReceivedGameList.get(Integer.parseInt(userArgs[1])-1);
                                     playerColor = userArgs[2].toUpperCase();
                                     isInGame = true;
-                                    hasLostGame = false;
                                 }else{
                                     System.out.println("failed to join game\n" + joinResponse.message());
                                 }
@@ -205,10 +204,12 @@ public class Client {
                                 if(foundGame){
                                     System.out.println("showing game");
                                     DrawChessBoard.drawChessBoard(out, "WHITE",
+                                            null, null,
                                             desiredGame.getChessGame().getBoard());
                                     System.out.print(EscapeSequences.RESET_BG_COLOR);
                                     System.out.print("\n\n");
                                     DrawChessBoard.drawChessBoard(out, "BLACK",
+                                            null, null,
                                             desiredGame.getChessGame().getBoard());
                                     System.out.print(EscapeSequences.RESET_BG_COLOR);
                                     System.out.print("\n");
@@ -257,10 +258,12 @@ public class Client {
                                     System.out.println("You are observing the game, you can not make a move");
                                     break;
                                 }
-                                if(hasLostGame){
-                                    System.out.println("You have lost, you can not make a move");
+                                if(currentJoinGame.getChessGame().isGameHasEnded()){
+                                    // need to switch out has lost game with another var
+                                    System.out.println("the game is over, you can not make a move");
                                     break;
                                 }
+                                System.out.println("Move received: " + userArgs[1]);
                                 break;
                             }catch(Exception ex){
                                 System.out.println("invalid arguments types");
@@ -270,32 +273,65 @@ public class Client {
                             if(playerColor.equals("BLACK")){
                                 System.out.println("redrawing game");
                                 DrawChessBoard.drawChessBoard(out, "BLACK",
+                                        null, null,
                                         currentJoinGame.getChessGame().getBoard());
                                 System.out.print(EscapeSequences.RESET_BG_COLOR);
                                 System.out.print("\n");
                             }else{
                                 System.out.println("redrawing game");
                                 DrawChessBoard.drawChessBoard(out, "WHITE",
+                                        null, null,
                                         currentJoinGame.getChessGame().getBoard());
                                 System.out.print(EscapeSequences.RESET_BG_COLOR);
                                 System.out.print("\n");
                             }
                             break;
                         case "legalMoves":
-                            // need more logic to find and highlight valid moves
-                            if(playerColor.equals("BLACK")){
-                                System.out.println("redrawing game");
-                                DrawChessBoard.drawChessBoard(out, "BLACK",
-                                        currentJoinGame.getChessGame().getBoard());
-                                System.out.print(EscapeSequences.RESET_BG_COLOR);
-                                System.out.print("\n");
-                            }else{
-                                System.out.println("redrawing game");
-                                DrawChessBoard.drawChessBoard(out, "WHITE",
-                                        currentJoinGame.getChessGame().getBoard());
-                                System.out.print(EscapeSequences.RESET_BG_COLOR);
-                                System.out.print("\n");
+                            if(userArgs.length != 2){
+                                System.out.println("invalid number of arguments");
+                                break;
                             }
+                            char letterIndex = userArgs[1].charAt(0);
+                            int convertedLetterNum = switch (letterIndex) {
+                                case 'a' -> 1;
+                                case 'b' -> 2;
+                                case 'c' -> 3;
+                                case 'd' -> 4;
+                                case 'e' -> 5;
+                                case 'f' -> 6;
+                                case 'g' -> 7;
+                                case 'h' -> 8;
+                                default -> -1;
+                            };
+                            if(convertedLetterNum == -1){
+                                System.out.println("invalid letter Index");
+                                break;
+                            }
+                            int numberIndex = Integer.parseInt(userArgs[1].substring(1));
+                            if(numberIndex > 8 | numberIndex < 1){
+                                System.out.println("invalid number Index");
+                                break;
+                            }
+
+                            Collection<ChessMove> validMoveList = currentJoinGame.getChessGame().
+                                    validMoves(new ChessPosition(numberIndex, convertedLetterNum));
+                            Set<ChessPosition> endPositionsSet = new HashSet<>();
+                            ChessPosition pieceStartingPos = null;
+                            for(ChessMove currentMove: validMoveList){
+                                pieceStartingPos = currentMove.getStartPosition();
+                                endPositionsSet.add(currentMove.getEndPosition());
+                            }
+                            if(playerColor.equals("BLACK")){
+                                DrawChessBoard.drawChessBoard(out, "BLACK",
+                                        pieceStartingPos, endPositionsSet,
+                                        currentJoinGame.getChessGame().getBoard());
+                            }else{
+                                DrawChessBoard.drawChessBoard(out, "WHITE",
+                                        pieceStartingPos, endPositionsSet,
+                                        currentJoinGame.getChessGame().getBoard());
+                            }
+                            System.out.print(EscapeSequences.RESET_BG_COLOR);
+                            System.out.print("\n");
                             break;
                         case "resign":
                             System.out.println("are you sure you want to resign? Y ? N");

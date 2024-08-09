@@ -59,10 +59,11 @@ public class WebSocketHandler {
                 case RESIGN -> resignSocketHandler(session, command);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw new IOException(ex.getMessage());
         }
 
     }
+
 
     private void connectSocketHandler(Session session, UserGameCommand command) throws IOException {
         try{

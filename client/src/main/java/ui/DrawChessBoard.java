@@ -3,6 +3,7 @@ package ui;
 import chess.*;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class DrawChessBoard {
     // Board dimensions.
@@ -16,7 +17,7 @@ public class DrawChessBoard {
     private static final String Q = " Q ";
     private static final String P = " P ";
 
-    public static void drawChessBoard(PrintStream out, String playerColor,  ChessBoard chessBoard) {
+    public static void drawChessBoard(PrintStream out, String playerColor, ChessPosition highLightStartPos , Set<ChessPosition> validEndPosSet, ChessBoard chessBoard) {
         boolean spaceIsWhite = true;
         if(playerColor.equals("WHITE")){
             drawWhiteHeader(out);
@@ -27,7 +28,7 @@ public class DrawChessBoard {
                 out.print(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 out.print(" " + Integer.toString(boardRow) + " ");
                 for(int boardColumn = 1; boardColumn <= BOARD_SIZE_IN_SQUARES; ++boardColumn){
-                    drawCorrectPiece(out, spaceIsWhite, new ChessPosition(boardRow, boardColumn), chessBoard);
+                    drawCorrectPiece(out, spaceIsWhite, new ChessPosition(boardRow, boardColumn), highLightStartPos, validEndPosSet, chessBoard);
                     spaceIsWhite = !spaceIsWhite;
                 }
                 out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
@@ -53,7 +54,7 @@ public class DrawChessBoard {
                 out.print(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 out.print(" " + Integer.toString(boardRow) + " ");
                 for(int boardColumn = BOARD_SIZE_IN_SQUARES; boardColumn >= 1; --boardColumn){
-                    drawCorrectPiece(out, spaceIsWhite, new ChessPosition(boardRow, boardColumn), chessBoard);
+                    drawCorrectPiece(out, spaceIsWhite, new ChessPosition(boardRow, boardColumn), highLightStartPos, validEndPosSet, chessBoard);
                     spaceIsWhite = !spaceIsWhite;
                 }
                 out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
@@ -92,13 +93,34 @@ public class DrawChessBoard {
         out.print(EscapeSequences.RESET_BG_COLOR);
         out.print("\n");
     }
-    private static void drawCorrectPiece(PrintStream out, boolean isWhite, ChessPosition piecePosition,
+    private static void drawCorrectPiece(PrintStream out, boolean isWhite,  ChessPosition piecePosition,
+                                         ChessPosition highLightStartPos , Set<ChessPosition> validEndPosSet,
                                          ChessBoard currentChessBoard){
-        if(isWhite){
-            out.print(EscapeSequences.SET_BG_COLOR_BLUE);
+        if(highLightStartPos !=null && validEndPosSet != null){
+            if(piecePosition.equals(highLightStartPos)){
+                out.print(EscapeSequences.SET_BG_COLOR_YELLOW);
+            }else if(validEndPosSet.contains(piecePosition)){
+                if(isWhite){
+                    out.print(EscapeSequences.SET_BG_COLOR_GREEN);
 
+                }else{
+                    out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
+                }
+            }else{
+                if(isWhite){
+                    out.print(EscapeSequences.SET_BG_COLOR_BLUE);
+
+                }else{
+                    out.print(EscapeSequences.SET_BG_COLOR_RED);
+                }
+            }
         }else{
-            out.print(EscapeSequences.SET_BG_COLOR_RED);
+            if(isWhite){
+                out.print(EscapeSequences.SET_BG_COLOR_BLUE);
+
+            }else{
+                out.print(EscapeSequences.SET_BG_COLOR_RED);
+            }
         }
         ChessPiece currentPiece = currentChessBoard.getPiece(piecePosition);
         if(currentPiece == null){
