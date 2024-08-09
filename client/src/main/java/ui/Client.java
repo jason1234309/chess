@@ -352,6 +352,9 @@ public class Client {
                         case "help":
                             printGamePlayHelp();
                             break;
+                        default:
+                            System.out.println("invalid command");
+                            break;
                     }
                 }
             }
