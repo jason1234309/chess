@@ -10,6 +10,7 @@ import dataaccess.SqlGameDAO;
 import model.AuthData;
 import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
@@ -61,6 +62,10 @@ public class WebSocketHandler {
         }
 
     }
+    @OnWebSocketClose
+    public void onClose(Session session, int status, String reason) throws DataAccessException {
+        connections.removeFromAllGames(session);
+    }
     @OnWebSocketError
     public void onError(Throwable ex){
         System.out.println(ex.getMessage());
@@ -75,14 +80,21 @@ public class WebSocketHandler {
                     connections.add(command.getGameID(), session);
                     this.sendMessage(session,  new LoadGameServerMessage(ServerMessage.ServerMessageType.LOAD_GAME,
                             sqlGameObj.getGame(command.getGameID()).getChessGame()));
-                    if(sqlGameObj.getGame(command.getGameID()).getWhiteUsername().equals(sessionAuth.getUsername())){
-                        this.broadCast(command.getGameID(), session, new NotificationServerMessage(
-                                ServerMessage.ServerMessageType.NOTIFICATION,
-                                sessionAuth.getUsername() + " the white player joined the game"));
-                    }else if(sqlGameObj.getGame(command.getGameID()).getBlackUsername().equals(sessionAuth.getUsername())){
-                        this.broadCast(command.getGameID(), session, new NotificationServerMessage(
-                                ServerMessage.ServerMessageType.NOTIFICATION,
-                                sessionAuth.getUsername() + " the black player joined the game"));
+                    if(sqlGameObj.getGame(command.getGameID()).getWhiteUsername() != null &&
+                    sqlGameObj.getGame(command.getGameID()).getBlackUsername() != null){
+                        if(sqlGameObj.getGame(command.getGameID()).getWhiteUsername().equals(sessionAuth.getUsername())){
+                            this.broadCast(command.getGameID(), session, new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,
+                                    sessionAuth.getUsername() + " the white player joined the game"));
+                        }else if(sqlGameObj.getGame(command.getGameID()).getBlackUsername().equals(sessionAuth.getUsername())){
+                            this.broadCast(command.getGameID(), session, new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,
+                                    sessionAuth.getUsername() + " the black player joined the game"));
+                        }else{
+                            this.broadCast(command.getGameID(), session, new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,"Observer " +
+                                    sessionAuth.getUsername() + " joined the game"));
+                        }
                     }else{
                         this.broadCast(command.getGameID(), session, new NotificationServerMessage(
                                 ServerMessage.ServerMessageType.NOTIFICATION,"Observer " +
@@ -203,7 +215,6 @@ public class WebSocketHandler {
                         }catch(InvalidMoveException ex){
                             throw new DataAccessException(ex.getMessage());
                         }
-
                     }else{
                         throw new DataAccessException("You are not a player in this game");
                     }
@@ -246,7 +257,7 @@ public class WebSocketHandler {
                                     sessionAuth.getUsername() + " the black player left the game"));
                         }else{
                             this.broadCast(command.getGameID(), session,new NotificationServerMessage(
-                                    ServerMessage.ServerMessageType.NOTIFICATION,"Observer" +
+                                    ServerMessage.ServerMessageType.NOTIFICATION,"Observer " +
                                     sessionAuth.getUsername() + " left the game"));
                         }
                     }else if(sqlGameObj.getGame(command.getGameID()).getWhiteUsername() == null &&
@@ -260,7 +271,7 @@ public class WebSocketHandler {
                                     sessionAuth.getUsername() + " the black player left the game"));
                         }else{
                             this.broadCast(command.getGameID(), session,new NotificationServerMessage(
-                                    ServerMessage.ServerMessageType.NOTIFICATION,"Observer" +
+                                    ServerMessage.ServerMessageType.NOTIFICATION,"Observer " +
                                     sessionAuth.getUsername() + " left the game"));
                         }
                     } else if(sqlGameObj.getGame(command.getGameID()).getWhiteUsername() != null &&
@@ -274,12 +285,12 @@ public class WebSocketHandler {
                                     sessionAuth.getUsername() + " the white player left the game"));
                         }else{
                             this.broadCast(command.getGameID(), session,new NotificationServerMessage(
-                                    ServerMessage.ServerMessageType.NOTIFICATION,"Observer" +
+                                    ServerMessage.ServerMessageType.NOTIFICATION,"Observer " +
                                     sessionAuth.getUsername() + " left the game"));
                         }
                     }else{
                         this.broadCast(command.getGameID(), session,new NotificationServerMessage(
-                                ServerMessage.ServerMessageType.NOTIFICATION,"Observer" +
+                                ServerMessage.ServerMessageType.NOTIFICATION,"Observer " +
                                 sessionAuth.getUsername() + " left the game"));
                     }
                 }else{
@@ -302,23 +313,53 @@ public class WebSocketHandler {
                         throw new DataAccessException("You are not connected to that game");
                     }
                     GameData currentGame = sqlGameObj.getGame(command.getGameID());
-                    if(currentGame.getWhiteUsername().equals(sessionAuth.getUsername())){
-                        currentGame.getChessGame().setGameHasEnded(true);
-                        sqlGameObj.updateGame(command.getGameID(), currentGame);
-                        this.broadCast(command.getGameID(), null, new NotificationServerMessage(
-                                ServerMessage.ServerMessageType.NOTIFICATION,
-                                sessionAuth.getUsername() + " the white player resigned"));
+                    if(currentGame.getChessGame().isGameHasEnded()){
+                        throw new DataAccessException("The game has ended, you can not resign");
+                    }
+                    if(currentGame.getWhiteUsername() != null &&
+                    currentGame.getBlackUsername() != null){
+                        if(currentGame.getWhiteUsername().equals(sessionAuth.getUsername())){
+                            currentGame.getChessGame().setGameHasEnded(true);
+                            sqlGameObj.updateGame(command.getGameID(), currentGame);
+                            this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,
+                                    sessionAuth.getUsername() + " the white player resigned"));
 
-                    }else if(currentGame.getBlackUsername().equals(sessionAuth.getUsername())){
-                        currentGame.getChessGame().setGameHasEnded(true);
-                        sqlGameObj.updateGame(command.getGameID(), currentGame);
-                        this.broadCast(command.getGameID(), null, new NotificationServerMessage(
-                                ServerMessage.ServerMessageType.NOTIFICATION,
-                                sessionAuth.getUsername() + " the black player resigned"));
+                        }else if(currentGame.getBlackUsername().equals(sessionAuth.getUsername())){
+                            currentGame.getChessGame().setGameHasEnded(true);
+                            sqlGameObj.updateGame(command.getGameID(), currentGame);
+                            this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,
+                                    sessionAuth.getUsername() + " the black player resigned"));
+                        }else{
+                            throw new DataAccessException("You are not a player in this game");
+                        }
+                    }else if(currentGame.getWhiteUsername() == null &&
+                            currentGame.getBlackUsername() != null){
+                        if(currentGame.getBlackUsername().equals(sessionAuth.getUsername())){
+                            currentGame.getChessGame().setGameHasEnded(true);
+                            sqlGameObj.updateGame(command.getGameID(), currentGame);
+                            this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,
+                                    sessionAuth.getUsername() + " the black player resigned"));
+                        }else{
+                            throw new DataAccessException("You are not a player in this game");
+                        }
+                    }else if(currentGame.getWhiteUsername() != null &&
+                            currentGame.getBlackUsername() == null){
+                        if(currentGame.getWhiteUsername().equals(sessionAuth.getUsername())){
+                            currentGame.getChessGame().setGameHasEnded(true);
+                            sqlGameObj.updateGame(command.getGameID(), currentGame);
+                            this.broadCast(command.getGameID(), null, new NotificationServerMessage(
+                                    ServerMessage.ServerMessageType.NOTIFICATION,
+                                    sessionAuth.getUsername() + " the white player resigned"));
+
+                        }else{
+                            throw new DataAccessException("You are not a player in this game");
+                        }
                     }else{
                         throw new DataAccessException("You are not a player in this game");
                     }
-
                 }else{
                     throw new DataAccessException("unauthorized");
                 }

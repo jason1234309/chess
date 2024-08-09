@@ -3,6 +3,7 @@ package server;
 import dataaccess.DataAccessException;
 import org.eclipse.jetty.websocket.api.Session;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,6 +17,15 @@ public class ConnectionManager {
             Set<Session> newSessionSet = new HashSet<>();
             newSessionSet.add(session);
             gameSessionsMap.put(gameID, newSessionSet);
+        }
+    }
+    public void removeFromAllGames(Session session) throws DataAccessException {
+        for(Map.Entry<Integer, Set<Session>> currentEntry: gameSessionsMap.entrySet()){
+            for(Session currentSession: currentEntry.getValue()){
+                if(currentSession.equals(session)){
+                    gameSessionsMap.get(currentEntry.getKey()).remove(session);
+                }
+            }
         }
     }
 
