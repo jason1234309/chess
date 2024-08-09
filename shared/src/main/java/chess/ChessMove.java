@@ -9,15 +9,15 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessMove {
-    ChessPosition startingPoint;
-    ChessPosition endingPoint;
-    ChessPiece.PieceType promotionPieceType;
+    ChessPosition startPosition;
+    ChessPosition endPosition;
+    ChessPiece.PieceType promotionPiece;
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
-        startingPoint = startPosition;
-        endingPoint = endPosition;
-        promotionPieceType = promotionPiece;
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.promotionPiece = promotionPiece;
     }
 
     /**
@@ -25,7 +25,7 @@ public class ChessMove {
      */
     public ChessPosition getStartPosition() {
 
-        return startingPoint;
+        return startPosition;
     }
 
     /**
@@ -33,7 +33,7 @@ public class ChessMove {
      */
     public ChessPosition getEndPosition() {
 
-        return endingPoint;
+        return endPosition;
     }
 
     /**
@@ -44,7 +44,7 @@ public class ChessMove {
      */
     public ChessPiece.PieceType getPromotionPiece() {
 
-        return promotionPieceType;
+        return promotionPiece;
     }
 
     @Override
@@ -52,13 +52,13 @@ public class ChessMove {
         if (this == o) {return true;}
         if (o == null || getClass() != o.getClass()) {return false;}
         ChessMove chessMove = (ChessMove) o;
-        return Objects.equals(startingPoint, chessMove.startingPoint)
-                && Objects.equals(endingPoint, chessMove.endingPoint)
-                && promotionPieceType == chessMove.promotionPieceType;
+        return Objects.equals(startPosition, chessMove.startPosition)
+                && Objects.equals(endPosition, chessMove.endPosition)
+                && promotionPiece == chessMove.promotionPiece;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(startingPoint, endingPoint, promotionPieceType);
+        return Objects.hash(startPosition, endPosition, promotionPiece);
     }
 }

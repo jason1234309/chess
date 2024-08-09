@@ -86,7 +86,7 @@ public class ChessGame {
                 validMoveList.add(possibleMove);
             }
             currentChessBoard.addPiece(possibleMove.getEndPosition(), replacedPieceVar);
-            currentChessBoard.addPiece(possibleMove.startingPoint, startingPiece);
+            currentChessBoard.addPiece(possibleMove.startPosition, startingPiece);
         }
         return validMoveList;
     }

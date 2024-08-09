@@ -9,12 +9,12 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessPosition {
-    int moveRow;
-    int moveCol;
+    int row;
+    int column;
 
     public ChessPosition(int row, int col) {
-        moveRow = row;
-        moveCol = col;
+        this.row = row;
+        column = col;
     }
 
     /**
@@ -23,7 +23,7 @@ public class ChessPosition {
      */
     public int getRow() {
 
-        return moveRow;
+        return row;
     }
     /**
      * @return which column this position is in
@@ -31,19 +31,19 @@ public class ChessPosition {
      */
     public int getColumn() {
 
-        return moveCol;
+        return column;
     }
     @Override
     public boolean equals(Object o) {
         if (this == o) {return true;}
         if (o == null || getClass() != o.getClass()) {return false;}
         ChessPosition that = (ChessPosition) o;
-        return moveRow == that.moveRow && moveCol == that.moveCol;
+        return row == that.row && column == that.column;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(moveRow, moveCol);
+        return Objects.hash(row, column);
     }
 
 
