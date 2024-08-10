@@ -380,7 +380,9 @@ public class WebSocketHandler {
         if(currentGameSessionSet != null){
             for( Session currentSession: currentGameSessionSet){
                 if(!currentSession.equals(excludedSession)){
-                    this.sendMessage(currentSession, broadCastMessage);
+                    if(currentSession.isOpen()){
+                        this.sendMessage(currentSession, broadCastMessage);
+                    }
                 }
             }
         }

@@ -172,7 +172,7 @@ public class AllServices {
             // if the current teamcolor is taken throws
             // a DataAccessException
             if(playerColor == ChessGame.TeamColor.BLACK){
-                if(currentGame.getBlackUsername() == null){
+                if(currentGame.getBlackUsername() == null || currentGame.getBlackUsername().equals(fullUserAuth.getUsername())){
                     currentGame.setBlackUsername(fullUserAuth.getUsername());
                 }else{
                     return new ErrorResponce("Error: already taken");
@@ -180,7 +180,7 @@ public class AllServices {
 
             }
             else{
-                if(currentGame.getWhiteUsername() == null){
+                if(currentGame.getWhiteUsername() == null || currentGame.getWhiteUsername().equals(fullUserAuth.getUsername())){
                     currentGame.setWhiteUsername(fullUserAuth.getUsername());
                 }else{
                     return new ErrorResponce("Error: already taken");

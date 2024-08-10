@@ -222,6 +222,8 @@ public class ServerFacadeTests {
         ResponseAuth registerAuthRes2 = serverFacade.registerClient("a", "a", "a");
         Assertions.assertNull(registerAuthRes2.message());
 
+        ResponseAuth registerAuthRes3 = serverFacade.registerClient("b", "b", "b");
+
         GameCreationResponse firstGameRes = serverFacade.createClientGame(registerAuthRes1.authToken(),
                 "firstGame");
         Assertions.assertNull(firstGameRes.message());
@@ -232,15 +234,18 @@ public class ServerFacadeTests {
 
         ErrorResponce gameJoinRes2 = serverFacade.joinClientToServerGame(registerAuthRes1.authToken(),
                 1, "White");
-        Assertions.assertEquals("Error: already taken", gameJoinRes2.message());
+        Assertions.assertNull(gameJoinRes2.message());
 
         ErrorResponce gameJoinRes3 = serverFacade.joinClientToServerGame(registerAuthRes2.authToken(),
                 1, "black");
         Assertions.assertNull(gameJoinRes3.message());
 
-        ErrorResponce gameJoinRes4 = serverFacade.joinClientToServerGame(registerAuthRes2.authToken(),
+        ErrorResponce gameJoinRes4 = serverFacade.joinClientToServerGame(registerAuthRes3.authToken(),
                 1, "black");
         Assertions.assertEquals("Error: already taken", gameJoinRes4.message());
+        ErrorResponce gameJoinRes5 = serverFacade.joinClientToServerGame(registerAuthRes3.authToken(),
+                1, "white");
+        Assertions.assertEquals("Error: already taken", gameJoinRes5.message());
     }
     @Test
     @DisplayName("logout client")

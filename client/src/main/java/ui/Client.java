@@ -25,16 +25,21 @@ public class Client {
     ServerMessageHandler clientServerMessageHandler;
     AuthData validAuthData;
     String baseURL;
-    PrintStream out;
     ChessGame.TeamColor joinedPLayerColor;
     ChessGame joinedChessGame;
     int joinedChessGameID;
     private ArrayList<GameData> lastReceivedGameList = new ArrayList<>();
+    public enum uiState {
+        PRELOGIN,
+        POSTLOGIN,
+        GAMEPLAY,
+        EXITING
+    }
+
     public Client(String baseURL){
         this.baseURL = baseURL;
         serverFacadeObj = new ServerFacade(baseURL);
         clientServerMessageHandler = new ServerMessageHandler(this);
-        PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
     }
     // this function runs the client and has the loop that receives user input and calls
     // appropriate helper functions
@@ -46,75 +51,73 @@ public class Client {
         boolean isLoggedIn = false;
         boolean isInGame = false;
         boolean isExitProgram = false;
+        uiState currentGameState = uiState.PRELOGIN;
         // the main loop that receives user input and calls appropriate helper functions
-        while(true){
+        while(currentGameState != uiState.EXITING){
             // get the user input
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
             String[] userArgs = line.split(" ");
             // this is the first phase where the user has not logged in
-            // tracked with the isLoggedIn boolean
-            if(!isLoggedIn){
-                switch (userArgs[0]) {
-                    case "register":
-                        try{
-                            // checks to see if the user put in the correct number of args
-                            if(userArgs.length != 4){
-                                System.out.println("invalid number of arguments");
+            switch(currentGameState){
+                case PRELOGIN -> {
+                    switch (userArgs[0]) {
+                        case "register":
+                            try{
+                                // checks to see if the user put in the correct number of args
+                                if(userArgs.length != 4){
+                                    System.out.println("invalid number of arguments");
+                                    break;
+                                }
+                                ResponseAuth registerResponseAuth = serverFacadeObj.registerClient(
+                                        userArgs[1],userArgs[2],userArgs[3]);
+                                // if registration was successful then the authToken is saved for later use
+                                if(registerResponseAuth.message() == null){
+                                    validAuthData = new AuthData(registerResponseAuth.username(),
+                                            registerResponseAuth.authToken());
+                                    currentGameState = uiState.POSTLOGIN;
+                                    System.out.println("logged in as " + validAuthData.getUsername());
+                                }else{
+                                    System.out.println("failed to register");
+                                }
+                                break;
+                            }catch(Exception ex) {
+                                System.out.println("invalid arguments types");
                                 break;
                             }
-                            ResponseAuth registerResponseAuth = serverFacadeObj.registerClient(
-                                    userArgs[1],userArgs[2],userArgs[3]);
-                            // if registration was successful then the authToken is saved for later use
-                            if(registerResponseAuth.message() == null){
-                                validAuthData = new AuthData(registerResponseAuth.username(),
-                                        registerResponseAuth.authToken());
-                                isLoggedIn = true;
-                                System.out.println("logged in as " + validAuthData.getUsername());
-                            }else{
-                                System.out.println("failed to register");
-                            }
-                            break;
-                        }catch(Exception ex) {
-                            System.out.println("invalid arguments types");
-                            break;
-                        }
-                    case "login":
-                        try{
-                            // checks to see if the user put in the correct number of args
-                            if(userArgs.length != 3){
-                                System.out.println("invalid number of arguments");
+                        case "login":
+                            try{
+                                // checks to see if the user put in the correct number of args
+                                if(userArgs.length != 3){
+                                    System.out.println("invalid number of arguments");
+                                    break;
+                                }
+                                ResponseAuth loginResponseAuth = serverFacadeObj.loginClient(userArgs[1],userArgs[2]);
+                                // if the login was successful then the authToken is saved for later use
+                                if(loginResponseAuth.message() == null){
+                                    validAuthData = new AuthData(loginResponseAuth.username(), loginResponseAuth.authToken());
+                                    currentGameState = uiState.POSTLOGIN;
+                                    System.out.println("logged in as " + validAuthData.getUsername());
+                                }else{
+                                    System.out.println("failed to login");
+                                }
+                                break;
+                            }catch(Exception ex){
+                                System.out.println("invalid arguments types");
                                 break;
                             }
-                            ResponseAuth loginResponseAuth = serverFacadeObj.loginClient(userArgs[1],userArgs[2]);
-                            // if the login was successful then the authToken is saved for later use
-                            if(loginResponseAuth.message() == null){
-                                validAuthData = new AuthData(loginResponseAuth.username(), loginResponseAuth.authToken());
-                                isLoggedIn = true;
-                                System.out.println("logged in as " + validAuthData.getUsername());
-                            }else{
-                                System.out.println("failed to login");
-                            }
+                        case "quit":
+                            currentGameState = uiState.EXITING;
                             break;
-                        }catch(Exception ex){
-                            System.out.println("invalid arguments types");
+                        case "help":
+                            printPreLoginHelp();
                             break;
-                        }
-                    case "quit":
-                        // uses isExitProgram boolean to exit the main while loop and stop the client
-                        isExitProgram = true;
-                        break;
-                    case "help":
-                        printPreLoginHelp();
-                        break;
-                    default:
-                        System.out.println("invalid command");
-                        break;
+                        default:
+                            System.out.println("invalid command");
+                            break;
+                    }
                 }
-            }else{
-                if(!isInGame){
-                    // this is the first phase where the user has logged in
-                    // tracked with the isLoggedIn boolean
+                case POSTLOGIN -> {
                     switch (userArgs[0]) {
                         // checks to see if the user put in the correct number of args
                         case "create":
@@ -166,10 +169,6 @@ public class Client {
                                     System.out.println("invalid number of arguments");
                                     break;
                                 }
-                                if(lastReceivedGameList.size() <= Integer.parseInt(userArgs[1])-1){
-                                    System.out.println("Invalid gameNumber");
-                                    break;
-                                }
                                 int gameListIndex = Integer.parseInt(userArgs[1])-1;
                                 if(gameListIndex < 0 || lastReceivedGameList.size() <= gameListIndex){
                                     System.out.println("Invalid gameNumber");
@@ -194,7 +193,7 @@ public class Client {
                                             UserGameCommand.CommandType.CONNECT, validAuthData.getAuthToken(), joinGameID);
                                     clientSocketObj = new WebSocketFacade(baseURL, clientServerMessageHandler);
                                     clientSocketObj.connectClient(connectionCommand);
-                                    isInGame = true;
+                                    currentGameState = uiState.GAMEPLAY;
                                 }else{
                                     System.out.println("failed to join game\n" + joinResponse.message());
                                 }
@@ -221,7 +220,7 @@ public class Client {
                                 clientSocketObj = new WebSocketFacade(baseURL, clientServerMessageHandler);
                                 clientSocketObj.connectClient(connectionCommand);
                                 joinedPLayerColor = null;
-                                isInGame = true;
+                                currentGameState = uiState.GAMEPLAY;
                             }catch(Exception ex){
                                 System.out.println("invalid arguments types");
                                 break;
@@ -229,15 +228,14 @@ public class Client {
                         case "logout":
                             ErrorResponce logoutResponse = serverFacadeObj.logoutClient(validAuthData.getAuthToken());
                             if(logoutResponse.message() == null){
-                                isLoggedIn = false;
+                                currentGameState = uiState.PRELOGIN;
                                 System.out.println("logged out successfully");
                             }else{
                                 System.out.println("failed to logout\n" + logoutResponse.message());
                             }
                             break;
                         case "quit":
-                            // uses isExitProgram boolean to exit the main while loop and stop the client
-                            isExitProgram = true;
+                            currentGameState = uiState.EXITING;
                             break;
                         case "help":
                             printPostLoginHelp();
@@ -246,13 +244,40 @@ public class Client {
                             System.out.println("invalid command");
                             break;
                     }
-                }else{
+                }
+                case GAMEPLAY -> {
                     switch(userArgs[0]){
                         case "makeMove":
+                            ChessPiece.PieceType promotionPieceType = ChessPiece.PieceType.PAWN;
                             try{
                                 // checks to see if the user put in the correct number of args
-                                if(userArgs.length != 4){
+                                if(userArgs.length > 4 || userArgs.length < 3){
                                     System.out.println("invalid number of arguments");
+                                    break;
+                                }
+                                if(userArgs.length == 3){
+                                    promotionPieceType = null;
+                                }
+                                if(userArgs.length == 4){
+                                    switch(userArgs[3].toUpperCase()){
+                                        case "R":
+                                            promotionPieceType = ChessPiece.PieceType.ROOK;
+                                            break;
+                                        case "N":
+                                            promotionPieceType = ChessPiece.PieceType.KNIGHT;
+                                            break;
+                                        case "B":
+                                            promotionPieceType = ChessPiece.PieceType.BISHOP;
+                                            break;
+                                        case "Q":
+                                            promotionPieceType = ChessPiece.PieceType.QUEEN;
+                                            break;
+                                        default:
+                                            promotionPieceType = ChessPiece.PieceType.PAWN;
+                                    }
+                                }
+                                if(promotionPieceType == ChessPiece.PieceType.PAWN){
+                                    System.out.println("invalid promotion piece type");
                                     break;
                                 }
                                 if(joinedPLayerColor == null){
@@ -264,6 +289,11 @@ public class Client {
                                     break;
                                 }
                                 // implement the make move client side
+                                int numberIndex1 = Integer.parseInt(userArgs[1].substring(1));
+                                if(numberIndex1 > 8 | numberIndex1 < 1){
+                                    System.out.println("invalid number Index");
+                                    break;
+                                }
                                 char letterIndex1 = userArgs[1].charAt(0);
                                 int convertedLetterNum1 = switch (letterIndex1) {
                                     case 'a' -> 1;
@@ -280,12 +310,13 @@ public class Client {
                                     System.out.println("invalid letter Index");
                                     break;
                                 }
-                                int numberIndex1 = Integer.parseInt(userArgs[1].substring(1));
-                                if(numberIndex1 > 8 | numberIndex1 < 1){
+
+                                int numberIndex2 = Integer.parseInt(userArgs[2].substring(1));
+                                if(numberIndex2 > 8 | numberIndex2 < 1){
                                     System.out.println("invalid number Index");
                                     break;
                                 }
-                                char letterIndex2 = userArgs[1].charAt(0);
+                                char letterIndex2 = userArgs[2].charAt(0);
                                 int convertedLetterNum2 = switch (letterIndex2) {
                                     case 'a' -> 1;
                                     case 'b' -> 2;
@@ -301,29 +332,6 @@ public class Client {
                                     System.out.println("invalid letter Index");
                                     break;
                                 }
-                                int numberIndex2 = Integer.parseInt(userArgs[1].substring(1));
-                                if(numberIndex2 > 8 | numberIndex2 < 1){
-                                    System.out.println("invalid number Index");
-                                    break;
-                                }
-                                ChessPiece.PieceType promotionPieceType;
-                                switch(userArgs[3].toUpperCase()){
-                                    case "R":
-                                        promotionPieceType = ChessPiece.PieceType.ROOK;
-                                        break;
-                                    case "N":
-                                        promotionPieceType = ChessPiece.PieceType.KNIGHT;
-                                        break;
-                                    case "B":
-                                        promotionPieceType = ChessPiece.PieceType.BISHOP;
-                                        break;
-                                    case "Q":
-                                        promotionPieceType = ChessPiece.PieceType.QUEEN;
-                                        break;
-                                    default:
-                                        promotionPieceType = null;
-                                        break;
-                                }
                                 MakeMoveCommand makeMove = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE,
                                         validAuthData.getAuthToken(), joinedChessGameID,
                                         new ChessMove(new ChessPosition(numberIndex1,convertedLetterNum1),new ChessPosition(numberIndex2, convertedLetterNum2), promotionPieceType));
@@ -333,24 +341,24 @@ public class Client {
                                 System.out.println("invalid arguments types");
                                 break;
                             }
-                        case "redrawBoard":
+                        case "redraw":
                             if(joinedPLayerColor == ChessGame.TeamColor.BLACK){
                                 System.out.println("redrawing game");
-                                DrawChessBoard.drawChessBoard(out, "BLACK",
+                                DrawChessBoard.drawChessBoard(System.out, "BLACK",
                                         null, null,
                                         joinedChessGame.getBoard());
                                 System.out.print(EscapeSequences.RESET_BG_COLOR);
                                 System.out.print("\n");
                             }else{
                                 System.out.println("redrawing game");
-                                DrawChessBoard.drawChessBoard(out, "WHITE",
+                                DrawChessBoard.drawChessBoard(System.out, "WHITE",
                                         null, null,
                                         joinedChessGame.getBoard());
                                 System.out.print(EscapeSequences.RESET_BG_COLOR);
                                 System.out.print("\n");
                             }
                             break;
-                        case "legalMoves":
+                        case "legal":
                             if(userArgs.length != 2){
                                 System.out.println("invalid number of arguments");
                                 break;
@@ -379,6 +387,10 @@ public class Client {
 
                             Collection<ChessMove> validMoveList = joinedChessGame.
                                     validMoves(new ChessPosition(numberIndex, convertedLetterNum));
+                            if(validMoveList == null){
+                                System.out.println("There are no valid moves");
+                                break;
+                            }
                             Set<ChessPosition> endPositionsSet = new HashSet<>();
                             ChessPosition pieceStartingPos = null;
                             for(ChessMove currentMove: validMoveList){
@@ -386,11 +398,11 @@ public class Client {
                                 endPositionsSet.add(currentMove.getEndPosition());
                             }
                             if(joinedPLayerColor == ChessGame.TeamColor.BLACK){
-                                DrawChessBoard.drawChessBoard(out, "BLACK",
+                                DrawChessBoard.drawChessBoard(System.out, "BLACK",
                                         pieceStartingPos, endPositionsSet,
                                         joinedChessGame.getBoard());
                             }else{
-                                DrawChessBoard.drawChessBoard(out, "WHITE",
+                                DrawChessBoard.drawChessBoard(System.out, "WHITE",
                                         pieceStartingPos, endPositionsSet,
                                         joinedChessGame.getBoard());
                             }
@@ -401,20 +413,19 @@ public class Client {
                             System.out.println("are you sure you want to resign? Y ? N");
                             line = scanner.nextLine();
                             userArgs = line.split(" ");
-                            if(userArgs[0].equals("Y") | userArgs[0].equals("y")){
+                            if(userArgs[0].equals("Y") | userArgs[0].equals("y")) {
                                 System.out.println("resigning from game");
                                 joinedChessGame.setGameHasEnded(true);
                                 UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, validAuthData.getAuthToken(), joinedChessGameID);
                                 clientSocketObj.resignClient(resignCommand);
                                 System.out.println("you have been defeated");
-                                // game over stuff
-
                             }
                             break;
                         case "leave":
-                            isInGame = false;
                             UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, validAuthData.getAuthToken(), joinedChessGameID);
                             clientSocketObj.leaveGame(leaveCommand);
+                            System.out.println("left the game");
+                            currentGameState = uiState.POSTLOGIN;
                             break;
                         case "help":
                             printGamePlayHelp();
@@ -424,11 +435,6 @@ public class Client {
                             break;
                     }
                 }
-            }
-            // checks the isExitProgram boolean to see if the user asked to break out of the main while loop
-            // and close the program
-            if(isExitProgram){
-                break;
             }
         }
     }
@@ -456,10 +462,11 @@ public class Client {
 
     public void printGamePlayHelp(){
         System.out.println("""
-                makeMove <originalPiecePosition> <newPiecePosition> <promotionPieceLetter> - makes the move for your turn. 
+                makeMove <originalPiecePosition> <newPiecePosition> --promotionPieceLetter-- - makes the move for your turn. 
                     the piecePositions are the letter for the square followed by the number for the square
-                redrawBoard - redraws the chess board
-                legalMoves <piecePosition> - highlights the valid moves of the piece specified
+                    the promotion piece is optional argument for when a pawn is promoted by the move
+                redraw - redraws the chess board
+                legal <piecePosition> - highlights the valid moves of the piece specified
                 resign - allows the player to resign the chess game, will ask if user wants to resign
                 leave - leaves the game and returns to the postlogin ui
                 help - displays the help message to see what options are available
@@ -469,18 +476,20 @@ public class Client {
         joinedChessGame = sentChessGame;
         if(joinedPLayerColor == ChessGame.TeamColor.BLACK){
             System.out.println("redrawing game");
-            DrawChessBoard.drawChessBoard(out, "BLACK",
+            DrawChessBoard.drawChessBoard(System.out, "BLACK",
                     null, null,
                     joinedChessGame.getBoard());
             System.out.print(EscapeSequences.RESET_BG_COLOR);
             System.out.print("\n");
+            System.out.println(joinedChessGame.getTeamTurn().toString() + "'s turn");
         }else{
             System.out.println("redrawing game");
-            DrawChessBoard.drawChessBoard(out, "WHITE",
+            DrawChessBoard.drawChessBoard(System.out, "WHITE",
                     null, null,
                     joinedChessGame.getBoard());
             System.out.print(EscapeSequences.RESET_BG_COLOR);
             System.out.print("\n");
+            System.out.println(joinedChessGame.getTeamTurn().toString() + "'s turn");
         }
     }
     public void printServerMessage(String message){

@@ -176,16 +176,21 @@ public class GameServiceTests {
     @DisplayName("white player joins full game")
     public void whitePlayerJoinsFullGame(){
         ResponseAuth registerAuth = testServiceObj.register(player1Data);
+        ResponseAuth registerAuth2 = testServiceObj.register(player2Data);
         GameCreationResponse game1ID = testServiceObj.createGame(
                 new AuthData(registerAuth.username(), registerAuth.authToken()), "firstGame");
         ErrorResponce whiteJoined = testServiceObj.joinGame(
                 new AuthData(registerAuth.username(), registerAuth.authToken()),
                 ChessGame.TeamColor.WHITE, game1ID.gameID());
         ErrorResponce whiteJoined2 = testServiceObj.joinGame(
+                new AuthData(registerAuth2.username(), registerAuth2.authToken()),
+                ChessGame.TeamColor.WHITE, game1ID.gameID());
+        ErrorResponce whiteJoined3 = testServiceObj.joinGame(
                 new AuthData(registerAuth.username(), registerAuth.authToken()),
                 ChessGame.TeamColor.WHITE, game1ID.gameID());
         Assertions.assertEquals(whiteJoined, new ErrorResponce(null));
-        Assertions.assertEquals(whiteJoined2, alreadyTakenError);
+        Assertions.assertEquals(alreadyTakenError, whiteJoined2);
+        Assertions.assertEquals(whiteJoined3, new ErrorResponce(null));
 
     }
 }
