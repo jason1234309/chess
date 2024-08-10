@@ -1,8 +1,12 @@
 package ui;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorServerMessage;
+import websocket.messages.LoadGameServerMessage;
+import websocket.messages.NotificationServerMessage;
 import websocket.messages.ServerMessage;
 import javax.websocket.*;
 import java.io.IOException;
@@ -26,8 +30,22 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
-                    serverMessageHandler.notify(notification);
+                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                    switch(serverMessage.getServerMessageType()){
+                        case NOTIFICATION -> {
+                            NotificationServerMessage noteMessage = new Gson().fromJson(message, NotificationServerMessage.class);
+                            serverMessageHandler.notify(noteMessage);
+                        }
+                        case ERROR -> {
+                            ErrorServerMessage errorMessage = new Gson().fromJson(message, ErrorServerMessage.class);
+                            serverMessageHandler.notify(errorMessage);
+                        }
+                        case LOAD_GAME -> {
+                            Gson serializer = new GsonBuilder().enableComplexMapKeySerialization().create();
+                            LoadGameServerMessage loadMessage = serializer.fromJson(message, LoadGameServerMessage.class);
+                            serverMessageHandler.notify(loadMessage);
+                        }
+                    }
                 }
             });
     }
@@ -46,20 +64,19 @@ public class WebSocketFacade extends Endpoint {
         System.out.println(thr.getMessage());
     }
 
-    public void connectClient(UserGameCommand command){
-
+    public void connectClient(UserGameCommand command) throws IOException {
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void makeMoveClient(MakeMoveCommand command){
-
+    public void makeMoveClient(MakeMoveCommand command)throws IOException{
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void resignClient(UserGameCommand command){
-
+    public void resignClient(UserGameCommand command)throws IOException{
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
 
-    public void leaveGame(UserGameCommand command){
-
+    public void leaveGame(UserGameCommand command)throws IOException{
+        this.session.getBasicRemote().sendText(new Gson().toJson(command));
     }
-
 }
