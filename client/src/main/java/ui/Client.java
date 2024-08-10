@@ -1,6 +1,8 @@
 package ui;
 
+import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import model.AuthData;
 import model.GameData;
@@ -8,6 +10,9 @@ import responserequest.ErrorResponce;
 import responserequest.GameCreationResponse;
 import responserequest.GameListResponse;
 import responserequest.ResponseAuth;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.*;
@@ -16,15 +21,24 @@ import java.util.*;
 
 public class Client {
     ServerFacade serverFacadeObj;
+    WebSocketFacade clientSocketObj;
+    ServerMessageHandler clientServerMessageHandler;
     AuthData validAuthData;
+    String baseURL;
+    PrintStream out;
+    ChessGame.TeamColor joinedPLayerColor;
+    ChessGame joinedChessGame;
+    int joinedChessGameID;
     private ArrayList<GameData> lastReceivedGameList = new ArrayList<>();
     public Client(String baseURL){
+        this.baseURL = baseURL;
         serverFacadeObj = new ServerFacade(baseURL);
+        clientServerMessageHandler = new ServerMessageHandler(this);
+        PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
     }
     // this function runs the client and has the loop that receives user input and calls
     // appropriate helper functions
     public void run() throws IOException, URISyntaxException {
-        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         // print out the starting header into the terminal
         System.out.print(EscapeSequences.WHITE_KING);
         System.out.print("Welcome to 240 chess. Type help to get started");
@@ -32,9 +46,6 @@ public class Client {
         boolean isLoggedIn = false;
         boolean isInGame = false;
         boolean isExitProgram = false;
-        boolean hasLostGame = false;
-        String playerColor = "";
-        GameData currentJoinGame = null;
         // the main loop that receives user input and calls appropriate helper functions
         while(true){
             // get the user input
@@ -159,15 +170,30 @@ public class Client {
                                     System.out.println("Invalid gameNumber");
                                     break;
                                 }
-                                int joinGameID = lastReceivedGameList.get(Integer.parseInt(userArgs[1])-1).getGameID();
-                                // joins the client to the chosen game, the games start at 1, but the game list is 0 indexed
-                                // making it necessary to have userArgs[1] - 1
+                                int gameListIndex = Integer.parseInt(userArgs[1])-1;
+                                if(gameListIndex < 0 || lastReceivedGameList.size() <= gameListIndex){
+                                    System.out.println("Invalid gameNumber");
+                                    break;
+                                }
+                                int joinGameID = lastReceivedGameList.get(gameListIndex).getGameID();
+
                                 ErrorResponce joinResponse = serverFacadeObj.joinClientToServerGame(
                                         validAuthData.getAuthToken(), joinGameID, userArgs[2]);
                                 if(joinResponse.message() == null){
                                     System.out.println("Joined game");
-                                    currentJoinGame = lastReceivedGameList.get(Integer.parseInt(userArgs[1])-1);
-                                    playerColor = userArgs[2].toUpperCase();
+                                    if((userArgs[2].toUpperCase()).equals("WHITE")){
+                                        joinedPLayerColor = ChessGame.TeamColor.WHITE;
+                                    }else if((userArgs[2].toUpperCase()).equals("BLACK")){
+                                        joinedPLayerColor = ChessGame.TeamColor.BLACK;
+                                    }else{
+                                        System.out.println("invalid player color");
+                                        break;
+                                    }
+                                    joinedChessGameID = joinGameID;
+                                    UserGameCommand connectionCommand = new UserGameCommand(
+                                            UserGameCommand.CommandType.CONNECT, validAuthData.getAuthToken(), joinGameID);
+                                    clientSocketObj = new WebSocketFacade(baseURL, clientServerMessageHandler);
+                                    clientSocketObj.connectClient(connectionCommand);
                                     isInGame = true;
                                 }else{
                                     System.out.println("failed to join game\n" + joinResponse.message());
@@ -184,43 +210,18 @@ public class Client {
                                     System.out.println("invalid number of arguments");
                                     break;
                                 }
-                                if(lastReceivedGameList.size() <= Integer.parseInt(userArgs[1])-1){
+                                int gameListIndex = Integer.parseInt(userArgs[1])-1;
+                                if(gameListIndex < 0 || lastReceivedGameList.size() <= gameListIndex){
                                     System.out.println("Invalid gameNumber");
                                     break;
                                 }
-                                // finds and prints the desired game to the console unless the game does not exist
-                                // prints the chosen game to the console, the games start at 1,
-                                int gameID = lastReceivedGameList.get(Integer.parseInt(userArgs[1])-1).getGameID();
-                                boolean foundGame = false;
-                                GameData desiredGame = null;
-                                for(GameData currentGame: lastReceivedGameList){
-                                    if(currentGame.getGameID() == gameID){
-                                        foundGame = true;
-                                        desiredGame = currentGame;
-                                        break;
-                                    }
-                                }
-                                // if the game exists print the game
-                                if(foundGame){
-                                    System.out.println("showing game");
-                                    DrawChessBoard.drawChessBoard(out, "WHITE",
-                                            null, null,
-                                            desiredGame.getChessGame().getBoard());
-                                    System.out.print(EscapeSequences.RESET_BG_COLOR);
-                                    System.out.print("\n\n");
-                                    DrawChessBoard.drawChessBoard(out, "BLACK",
-                                            null, null,
-                                            desiredGame.getChessGame().getBoard());
-                                    System.out.print(EscapeSequences.RESET_BG_COLOR);
-                                    System.out.print("\n");
-                                    currentJoinGame = desiredGame;
-                                    playerColor = "";
-                                    isInGame = true;
-                                    hasLostGame = false;
-                                }else{
-                                    System.out.println("failed to find game");
-                                }
-                                break;
+                                joinedChessGameID = lastReceivedGameList.get(gameListIndex).getGameID();
+                                UserGameCommand connectionCommand = new UserGameCommand(
+                                        UserGameCommand.CommandType.CONNECT, validAuthData.getAuthToken(), joinedChessGameID);
+                                clientSocketObj = new WebSocketFacade(baseURL, clientServerMessageHandler);
+                                clientSocketObj.connectClient(connectionCommand);
+                                joinedPLayerColor = null;
+                                isInGame = true;
                             }catch(Exception ex){
                                 System.out.println("invalid arguments types");
                                 break;
@@ -250,38 +251,101 @@ public class Client {
                         case "makeMove":
                             try{
                                 // checks to see if the user put in the correct number of args
-                                if(userArgs.length != 3){
+                                if(userArgs.length != 4){
                                     System.out.println("invalid number of arguments");
                                     break;
                                 }
-                                if(playerColor.equals("")){
+                                if(joinedPLayerColor == null){
                                     System.out.println("You are observing the game, you can not make a move");
                                     break;
                                 }
-                                if(currentJoinGame.getChessGame().isGameHasEnded()){
-                                    // need to switch out has lost game with another var
+                                if(joinedChessGame.isGameHasEnded()){
                                     System.out.println("the game is over, you can not make a move");
                                     break;
                                 }
-                                System.out.println("Move received: " + userArgs[1]);
+                                // implement the make move client side
+                                char letterIndex1 = userArgs[1].charAt(0);
+                                int convertedLetterNum1 = switch (letterIndex1) {
+                                    case 'a' -> 1;
+                                    case 'b' -> 2;
+                                    case 'c' -> 3;
+                                    case 'd' -> 4;
+                                    case 'e' -> 5;
+                                    case 'f' -> 6;
+                                    case 'g' -> 7;
+                                    case 'h' -> 8;
+                                    default -> -1;
+                                };
+                                if(convertedLetterNum1 == -1){
+                                    System.out.println("invalid letter Index");
+                                    break;
+                                }
+                                int numberIndex1 = Integer.parseInt(userArgs[1].substring(1));
+                                if(numberIndex1 > 8 | numberIndex1 < 1){
+                                    System.out.println("invalid number Index");
+                                    break;
+                                }
+                                char letterIndex2 = userArgs[1].charAt(0);
+                                int convertedLetterNum2 = switch (letterIndex2) {
+                                    case 'a' -> 1;
+                                    case 'b' -> 2;
+                                    case 'c' -> 3;
+                                    case 'd' -> 4;
+                                    case 'e' -> 5;
+                                    case 'f' -> 6;
+                                    case 'g' -> 7;
+                                    case 'h' -> 8;
+                                    default -> -1;
+                                };
+                                if(convertedLetterNum2 == -1){
+                                    System.out.println("invalid letter Index");
+                                    break;
+                                }
+                                int numberIndex2 = Integer.parseInt(userArgs[1].substring(1));
+                                if(numberIndex2 > 8 | numberIndex2 < 1){
+                                    System.out.println("invalid number Index");
+                                    break;
+                                }
+                                ChessPiece.PieceType promotionPieceType;
+                                switch(userArgs[3].toUpperCase()){
+                                    case "R":
+                                        promotionPieceType = ChessPiece.PieceType.ROOK;
+                                        break;
+                                    case "N":
+                                        promotionPieceType = ChessPiece.PieceType.KNIGHT;
+                                        break;
+                                    case "B":
+                                        promotionPieceType = ChessPiece.PieceType.BISHOP;
+                                        break;
+                                    case "Q":
+                                        promotionPieceType = ChessPiece.PieceType.QUEEN;
+                                        break;
+                                    default:
+                                        promotionPieceType = null;
+                                        break;
+                                }
+                                MakeMoveCommand makeMove = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE,
+                                        validAuthData.getAuthToken(), joinedChessGameID,
+                                        new ChessMove(new ChessPosition(numberIndex1,convertedLetterNum1),new ChessPosition(numberIndex2, convertedLetterNum2), promotionPieceType));
+                                clientSocketObj.makeMoveClient(makeMove);
                                 break;
                             }catch(Exception ex){
                                 System.out.println("invalid arguments types");
                                 break;
                             }
                         case "redrawBoard":
-                            if(playerColor.equals("BLACK")){
+                            if(joinedPLayerColor == ChessGame.TeamColor.BLACK){
                                 System.out.println("redrawing game");
                                 DrawChessBoard.drawChessBoard(out, "BLACK",
                                         null, null,
-                                        currentJoinGame.getChessGame().getBoard());
+                                        joinedChessGame.getBoard());
                                 System.out.print(EscapeSequences.RESET_BG_COLOR);
                                 System.out.print("\n");
                             }else{
                                 System.out.println("redrawing game");
                                 DrawChessBoard.drawChessBoard(out, "WHITE",
                                         null, null,
-                                        currentJoinGame.getChessGame().getBoard());
+                                        joinedChessGame.getBoard());
                                 System.out.print(EscapeSequences.RESET_BG_COLOR);
                                 System.out.print("\n");
                             }
@@ -313,7 +377,7 @@ public class Client {
                                 break;
                             }
 
-                            Collection<ChessMove> validMoveList = currentJoinGame.getChessGame().
+                            Collection<ChessMove> validMoveList = joinedChessGame.
                                     validMoves(new ChessPosition(numberIndex, convertedLetterNum));
                             Set<ChessPosition> endPositionsSet = new HashSet<>();
                             ChessPosition pieceStartingPos = null;
@@ -321,14 +385,14 @@ public class Client {
                                 pieceStartingPos = currentMove.getStartPosition();
                                 endPositionsSet.add(currentMove.getEndPosition());
                             }
-                            if(playerColor.equals("BLACK")){
+                            if(joinedPLayerColor == ChessGame.TeamColor.BLACK){
                                 DrawChessBoard.drawChessBoard(out, "BLACK",
                                         pieceStartingPos, endPositionsSet,
-                                        currentJoinGame.getChessGame().getBoard());
+                                        joinedChessGame.getBoard());
                             }else{
                                 DrawChessBoard.drawChessBoard(out, "WHITE",
                                         pieceStartingPos, endPositionsSet,
-                                        currentJoinGame.getChessGame().getBoard());
+                                        joinedChessGame.getBoard());
                             }
                             System.out.print(EscapeSequences.RESET_BG_COLOR);
                             System.out.print("\n");
@@ -339,7 +403,9 @@ public class Client {
                             userArgs = line.split(" ");
                             if(userArgs[0].equals("Y") | userArgs[0].equals("y")){
                                 System.out.println("resigning from game");
-                                hasLostGame = true;
+                                joinedChessGame.setGameHasEnded(true);
+                                UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, validAuthData.getAuthToken(), joinedChessGameID);
+                                clientSocketObj.resignClient(resignCommand);
                                 System.out.println("you have been defeated");
                                 // game over stuff
 
@@ -347,7 +413,8 @@ public class Client {
                             break;
                         case "leave":
                             isInGame = false;
-                            // need to remove the player from the game, or end the game
+                            UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, validAuthData.getAuthToken(), joinedChessGameID);
+                            clientSocketObj.leaveGame(leaveCommand);
                             break;
                         case "help":
                             printGamePlayHelp();
@@ -389,7 +456,7 @@ public class Client {
 
     public void printGamePlayHelp(){
         System.out.println("""
-                makeMove <originalPiecePosition> <newPiecePosition> - makes the move for your turn. 
+                makeMove <originalPiecePosition> <newPiecePosition> <promotionPieceLetter> - makes the move for your turn. 
                     the piecePositions are the letter for the square followed by the number for the square
                 redrawBoard - redraws the chess board
                 legalMoves <piecePosition> - highlights the valid moves of the piece specified
@@ -398,4 +465,26 @@ public class Client {
                 help - displays the help message to see what options are available
                 """);
     }
+    public void updateJoinedChessGame(ChessGame sentChessGame){
+        joinedChessGame = sentChessGame;
+        if(joinedPLayerColor == ChessGame.TeamColor.BLACK){
+            System.out.println("redrawing game");
+            DrawChessBoard.drawChessBoard(out, "BLACK",
+                    null, null,
+                    joinedChessGame.getBoard());
+            System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.print("\n");
+        }else{
+            System.out.println("redrawing game");
+            DrawChessBoard.drawChessBoard(out, "WHITE",
+                    null, null,
+                    joinedChessGame.getBoard());
+            System.out.print(EscapeSequences.RESET_BG_COLOR);
+            System.out.print("\n");
+        }
+    }
+    public void printServerMessage(String message){
+        System.out.println(message);
+    }
+
 }

@@ -1,21 +1,23 @@
 package ui;
 
 import com.google.gson.Gson;
+import websocket.commands.MakeMoveCommand;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 import javax.websocket.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class webSocketFacade extends Endpoint {
+public class WebSocketFacade extends Endpoint {
     public final Session session;
-    NotificationHandler notificationHandler;
+    ServerMessageHandler serverMessageHandler;
 
 
-    public webSocketFacade(String url, NotificationHandler notificationHandler) throws URISyntaxException, DeploymentException, IOException {
+    public WebSocketFacade(String url, ServerMessageHandler serverMessageHandler) throws URISyntaxException, DeploymentException, IOException {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/ws");
-            this.notificationHandler = notificationHandler;
+            this.serverMessageHandler = serverMessageHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
@@ -25,7 +27,7 @@ public class webSocketFacade extends Endpoint {
                 @Override
                 public void onMessage(String message) {
                     ServerMessage notification = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(notification);
+                    serverMessageHandler.notify(notification);
                 }
             });
     }
@@ -41,21 +43,22 @@ public class webSocketFacade extends Endpoint {
 
     @Override
     public void onError(Session session, Throwable thr) {
-
-    }
-    public void connectClient(){
-
+        System.out.println(thr.getMessage());
     }
 
-    public void makeMoveClient(){
+    public void connectClient(UserGameCommand command){
 
     }
 
-    public void resignClient(){
+    public void makeMoveClient(MakeMoveCommand command){
 
     }
 
-    public void leaveGame(){
+    public void resignClient(UserGameCommand command){
+
+    }
+
+    public void leaveGame(UserGameCommand command){
 
     }
 
