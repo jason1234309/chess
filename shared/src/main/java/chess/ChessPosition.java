@@ -46,5 +46,22 @@ public class ChessPosition {
         return Objects.hash(row, column);
     }
 
-
+    @Override
+    public String toString() {
+        String positionString;
+        String letterIndex;
+        switch(column){
+            case 1 -> letterIndex = "a";
+            case 2 -> letterIndex = "b";
+            case 3 -> letterIndex = "c";
+            case 4 -> letterIndex = "d";
+            case 5 -> letterIndex = "e";
+            case 6 -> letterIndex = "f";
+            case 7 -> letterIndex = "g";
+            case 8 -> letterIndex = "h";
+            default -> letterIndex = "z";
+        }
+        positionString = letterIndex+Integer.toString(row);
+        return positionString;
+    }
 }

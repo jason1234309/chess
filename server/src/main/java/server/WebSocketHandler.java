@@ -141,7 +141,8 @@ public class WebSocketHandler {
 
                             this.broadCast(command.getGameID(), session,new NotificationServerMessage(
                                     ServerMessage.ServerMessageType.NOTIFICATION,
-                                    sessionAuth.getUsername() + " the white player make a move"));
+                                    sessionAuth.getUsername() + " the white player moved "
+                                            + command.getChessMove().toString()));
 
                             this.broadCast(command.getGameID(), null, new LoadGameServerMessage(
                                     ServerMessage.ServerMessageType.LOAD_GAME,currentGame.getChessGame()));
@@ -187,7 +188,8 @@ public class WebSocketHandler {
 
                             this.broadCast(command.getGameID(), session,new NotificationServerMessage(
                                     ServerMessage.ServerMessageType.NOTIFICATION,
-                                    sessionAuth.getUsername() + " the black player make a move"));
+                                    sessionAuth.getUsername() + " the black player moved "
+                                            + command.getChessMove().toString()));
 
                             this.broadCast(command.getGameID(), null, new LoadGameServerMessage(
                                     ServerMessage.ServerMessageType.LOAD_GAME,currentGame.getChessGame()));

@@ -61,4 +61,29 @@ public class ChessMove {
     public int hashCode() {
         return Objects.hash(startPosition, endPosition, promotionPiece);
     }
+
+    @Override
+    public String toString() {
+        String moveString;
+        String promotionString;
+        if(promotionPiece != null){
+            switch (promotionPiece){
+                case ROOK -> promotionString = "r";
+                case KNIGHT -> promotionString = "n";
+                case BISHOP -> promotionString = "b";
+                case QUEEN -> promotionString = "q";
+                default -> promotionString = "p";
+            }
+        }else{
+            promotionString = null;
+        }
+        if(promotionString != null){
+            moveString = startPosition.toString() + " " + endPosition.toString()
+                    + " " + promotionString;
+        }
+        else{
+            moveString = startPosition.toString() + " " + endPosition.toString();
+        }
+        return moveString;
+    }
 }

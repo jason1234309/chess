@@ -223,6 +223,7 @@ public class Client {
                                 clientSocketObj.connectClient(connectionCommand);
                                 joinedPLayerColor = null;
                                 currentGameState = DisplayState.GAMEPLAY;
+                                break;
                             }catch(Exception ex){
                                 System.out.println("invalid arguments types");
                                 break;
