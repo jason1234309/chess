@@ -14,9 +14,7 @@ import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Client {
@@ -29,7 +27,7 @@ public class Client {
     ChessGame joinedChessGame;
     int joinedChessGameID;
     private ArrayList<GameData> lastReceivedGameList = new ArrayList<>();
-    public enum uiState {
+    public enum DisplayState {
         PRELOGIN,
         POSTLOGIN,
         GAMEPLAY,
@@ -51,9 +49,9 @@ public class Client {
         boolean isLoggedIn = false;
         boolean isInGame = false;
         boolean isExitProgram = false;
-        uiState currentGameState = uiState.PRELOGIN;
+        DisplayState currentGameState = DisplayState.PRELOGIN;
         // the main loop that receives user input and calls appropriate helper functions
-        while(currentGameState != uiState.EXITING){
+        while(currentGameState != DisplayState.EXITING){
             // get the user input
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
@@ -75,7 +73,7 @@ public class Client {
                                 if(registerResponseAuth.message() == null){
                                     validAuthData = new AuthData(registerResponseAuth.username(),
                                             registerResponseAuth.authToken());
-                                    currentGameState = uiState.POSTLOGIN;
+                                    currentGameState = DisplayState.POSTLOGIN;
                                     System.out.println("logged in as " + validAuthData.getUsername());
                                 }else{
                                     System.out.println("failed to register");
@@ -95,8 +93,9 @@ public class Client {
                                 ResponseAuth loginResponseAuth = serverFacadeObj.loginClient(userArgs[1],userArgs[2]);
                                 // if the login was successful then the authToken is saved for later use
                                 if(loginResponseAuth.message() == null){
-                                    validAuthData = new AuthData(loginResponseAuth.username(), loginResponseAuth.authToken());
-                                    currentGameState = uiState.POSTLOGIN;
+                                    validAuthData = new AuthData(loginResponseAuth.username(),
+                                            loginResponseAuth.authToken());
+                                    currentGameState = DisplayState.POSTLOGIN;
                                     System.out.println("logged in as " + validAuthData.getUsername());
                                 }else{
                                     System.out.println("failed to login");
@@ -107,7 +106,7 @@ public class Client {
                                 break;
                             }
                         case "quit":
-                            currentGameState = uiState.EXITING;
+                            currentGameState = DisplayState.EXITING;
                             break;
                         case "help":
                             printPreLoginHelp();
@@ -140,7 +139,8 @@ public class Client {
                             }
                         case "list":
                             try{
-                                GameListResponse listResponse = serverFacadeObj.listServerGames(validAuthData.getAuthToken());
+                                GameListResponse listResponse = serverFacadeObj.
+                                        listServerGames(validAuthData.getAuthToken());
                                 if(listResponse.message() == null){
                                     System.out.println("Game list found");
                                     lastReceivedGameList.clear();
@@ -190,10 +190,11 @@ public class Client {
                                     }
                                     joinedChessGameID = joinGameID;
                                     UserGameCommand connectionCommand = new UserGameCommand(
-                                            UserGameCommand.CommandType.CONNECT, validAuthData.getAuthToken(), joinGameID);
+                                            UserGameCommand.CommandType.CONNECT, validAuthData.getAuthToken(),
+                                            joinGameID);
                                     clientSocketObj = new WebSocketFacade(baseURL, clientServerMessageHandler);
                                     clientSocketObj.connectClient(connectionCommand);
-                                    currentGameState = uiState.GAMEPLAY;
+                                    currentGameState = DisplayState.GAMEPLAY;
                                 }else{
                                     System.out.println("failed to join game\n" + joinResponse.message());
                                 }
@@ -216,11 +217,12 @@ public class Client {
                                 }
                                 joinedChessGameID = lastReceivedGameList.get(gameListIndex).getGameID();
                                 UserGameCommand connectionCommand = new UserGameCommand(
-                                        UserGameCommand.CommandType.CONNECT, validAuthData.getAuthToken(), joinedChessGameID);
+                                        UserGameCommand.CommandType.CONNECT, validAuthData.getAuthToken(),
+                                        joinedChessGameID);
                                 clientSocketObj = new WebSocketFacade(baseURL, clientServerMessageHandler);
                                 clientSocketObj.connectClient(connectionCommand);
                                 joinedPLayerColor = null;
-                                currentGameState = uiState.GAMEPLAY;
+                                currentGameState = DisplayState.GAMEPLAY;
                             }catch(Exception ex){
                                 System.out.println("invalid arguments types");
                                 break;
@@ -228,14 +230,14 @@ public class Client {
                         case "logout":
                             ErrorResponce logoutResponse = serverFacadeObj.logoutClient(validAuthData.getAuthToken());
                             if(logoutResponse.message() == null){
-                                currentGameState = uiState.PRELOGIN;
+                                currentGameState = DisplayState.PRELOGIN;
                                 System.out.println("logged out successfully");
                             }else{
                                 System.out.println("failed to logout\n" + logoutResponse.message());
                             }
                             break;
                         case "quit":
-                            currentGameState = uiState.EXITING;
+                            currentGameState = DisplayState.EXITING;
                             break;
                         case "help":
                             printPostLoginHelp();
@@ -334,7 +336,9 @@ public class Client {
                                 }
                                 MakeMoveCommand makeMove = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE,
                                         validAuthData.getAuthToken(), joinedChessGameID,
-                                        new ChessMove(new ChessPosition(numberIndex1,convertedLetterNum1),new ChessPosition(numberIndex2, convertedLetterNum2), promotionPieceType));
+                                        new ChessMove(new ChessPosition(numberIndex1,convertedLetterNum1),
+                                                new ChessPosition(numberIndex2, convertedLetterNum2),
+                                                promotionPieceType));
                                 clientSocketObj.makeMoveClient(makeMove);
                                 break;
                             }catch(Exception ex){
@@ -416,16 +420,20 @@ public class Client {
                             if(userArgs[0].equals("Y") | userArgs[0].equals("y")) {
                                 System.out.println("resigning from game");
                                 joinedChessGame.setGameHasEnded(true);
-                                UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, validAuthData.getAuthToken(), joinedChessGameID);
+                                UserGameCommand resignCommand = new UserGameCommand(
+                                        UserGameCommand.CommandType.RESIGN, validAuthData.getAuthToken(),
+                                        joinedChessGameID);
                                 clientSocketObj.resignClient(resignCommand);
                                 System.out.println("you have been defeated");
                             }
                             break;
                         case "leave":
-                            UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, validAuthData.getAuthToken(), joinedChessGameID);
+                            UserGameCommand leaveCommand = new UserGameCommand(
+                                    UserGameCommand.CommandType.LEAVE, validAuthData.getAuthToken(),
+                                    joinedChessGameID);
                             clientSocketObj.leaveGame(leaveCommand);
                             System.out.println("left the game");
-                            currentGameState = uiState.POSTLOGIN;
+                            currentGameState = DisplayState.POSTLOGIN;
                             break;
                         case "help":
                             printGamePlayHelp();
@@ -462,7 +470,8 @@ public class Client {
 
     public void printGamePlayHelp(){
         System.out.println("""
-                makeMove <originalPiecePosition> <newPiecePosition> --promotionPieceLetter-- - makes the move for your turn. 
+                makeMove <originalPiecePosition> <newPiecePosition> --promotionPieceLetter--
+                    -makes the move for your turn. 
                     the piecePositions are the letter for the square followed by the number for the square
                     the promotion piece is optional argument for when a pawn is promoted by the move
                 redraw - redraws the chess board

@@ -17,7 +17,8 @@ public class DrawChessBoard {
     private static final String Q = " Q ";
     private static final String P = " P ";
 
-    public static void drawChessBoard(PrintStream out, String playerColor, ChessPosition highLightStartPos , Set<ChessPosition> validEndPosSet, ChessBoard chessBoard) {
+    public static void drawChessBoard(PrintStream out, String playerColor, ChessPosition highLightStartPos ,
+                                      Set<ChessPosition> validEndPosSet, ChessBoard chessBoard) {
         boolean spaceIsWhite = true;
         if(playerColor.equals("WHITE")){
             drawWhiteHeader(out);
@@ -28,7 +29,8 @@ public class DrawChessBoard {
                 out.print(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 out.print(" " + Integer.toString(boardRow) + " ");
                 for(int boardColumn = 1; boardColumn <= BOARD_SIZE_IN_SQUARES; ++boardColumn){
-                    drawCorrectPiece(out, spaceIsWhite, new ChessPosition(boardRow, boardColumn), highLightStartPos, validEndPosSet, chessBoard);
+                    drawCorrectPiece(out, spaceIsWhite, new ChessPosition(boardRow, boardColumn), highLightStartPos,
+                            validEndPosSet, chessBoard);
                     spaceIsWhite = !spaceIsWhite;
                 }
                 out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
@@ -54,7 +56,8 @@ public class DrawChessBoard {
                 out.print(EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY);
                 out.print(" " + Integer.toString(boardRow) + " ");
                 for(int boardColumn = BOARD_SIZE_IN_SQUARES; boardColumn >= 1; --boardColumn){
-                    drawCorrectPiece(out, spaceIsWhite, new ChessPosition(boardRow, boardColumn), highLightStartPos, validEndPosSet, chessBoard);
+                    drawCorrectPiece(out, spaceIsWhite, new ChessPosition(boardRow, boardColumn), highLightStartPos,
+                            validEndPosSet, chessBoard);
                     spaceIsWhite = !spaceIsWhite;
                 }
                 out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
